@@ -1,0 +1,45 @@
+locals {
+  secrets = {
+    firebase-api-key          = "Firebase Web API key for the React SPA"
+    firebase-admin-sdk-json   = "Firebase Admin SDK service account JSON (Cloud Run)"
+    gcp-project-id            = "GCP project ID consumed by Cloud Run at runtime"
+  }
+}
+
+resource "google_secret_manager_secret" "pipeline" {
+  for_each = local.secrets
+
+  secret_id = "${each.key}-${var.env}"
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    env     = var.env
+    managed = "terraform"
+  }
+}
+
+# upload-api Cloud Run reads Firebase Admin SDK + project ID
+resource "google_secret_manager_secret_iam_member" "upload_api_access" {
+  for_each = toset(["firebase-admin-sdk-json", "gcp-project-id"])
+
+  secret_id = google_secret_manager_secret.pipeline[each.key].id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.sa_upload_api_email}"
+}
+
+# validator Cloud Function reads project ID
+resource "google_secret_manager_secret_iam_member" "validator_access" {
+  secret_id = google_secret_manager_secret.pipeline["gcp-project-id"].id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.sa_validator_email}"
+}
+
+# dataflow reads project ID
+resource "google_secret_manager_secret_iam_member" "dataflow_access" {
+  secret_id = google_secret_manager_secret.pipeline["gcp-project-id"].id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.sa_dataflow_email}"
+}

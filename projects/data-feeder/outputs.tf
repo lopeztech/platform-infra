@@ -1,0 +1,7 @@
+output "gcs_bucket_names"       { value = module.gcs.bucket_names }
+output "pubsub_topic_ids"       { value = module.pubsub.topic_ids }
+output "bigquery_dataset_ids"   { value = module.bigquery.dataset_ids }
+output "service_account_emails" { value = module.iam.sa_emails }
+output "cloud_run_url"          { value = module.cloudrun.service_url }
+output "firestore_database"     { value = module.firestore.database_name }
+output "wif_provider_name"      { value = module.iam.wif_provider_name }
