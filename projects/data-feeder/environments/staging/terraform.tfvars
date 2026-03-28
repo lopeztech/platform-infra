@@ -1,4 +1,4 @@
-project_id         = "your-gcp-project-id-staging"
-region             = "us-central1"
+project_id         = "data-feeder-lcd"
+region             = "australia-southeast1"
 env                = "staging"
-platform_infra_ref = "v1.0.0"
+platform_infra_ref = "main"
