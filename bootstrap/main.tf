@@ -87,7 +87,7 @@ output "next_steps" {
       cd projects/<your-project>
       terraform init \\
         -backend-config="bucket=${local.state_bucket}" \\
-        -backend-config="prefix=terraform/state/<your-project>/${var.env}"
-      terraform apply -var-file=environments/${var.env}/terraform.tfvars
+        -backend-config="prefix=terraform/state/<your-project>"
+      terraform apply
   EOT
 }

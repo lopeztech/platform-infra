@@ -2,9 +2,7 @@ locals {
   sfx = var.env != "" ? "-${var.env}" : ""
 
   secrets = {
-    firebase-api-key        = "Firebase Web API key for the React SPA"
-    firebase-admin-sdk-json = "Firebase Admin SDK service account JSON (Cloud Run)"
-    gcp-project-id          = "GCP project ID consumed by Cloud Run at runtime"
+    gcp-project-id = "GCP project ID consumed by Cloud Run at runtime"
   }
 }
 
@@ -22,9 +20,6 @@ resource "google_secret_manager_secret" "pipeline" {
   }
 }
 
-# Initial placeholder versions — Cloud Run requires at least one version to exist.
-# Replace firebase-api-key and firebase-admin-sdk-json with real values via:
-#   gcloud secrets versions add <secret-id> --data-file=<file>
 resource "google_secret_manager_secret_version" "initial" {
   for_each = local.secrets
 
@@ -37,11 +32,9 @@ resource "google_secret_manager_secret_version" "initial" {
   }
 }
 
-# upload-api Cloud Run reads Firebase Admin SDK + project ID
+# upload-api Cloud Run reads project ID
 resource "google_secret_manager_secret_iam_member" "upload_api_access" {
-  for_each = toset(["firebase-admin-sdk-json", "gcp-project-id"])
-
-  secret_id = google_secret_manager_secret.pipeline[each.key].id
+  secret_id = google_secret_manager_secret.pipeline["gcp-project-id"].id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.sa_upload_api_email}"
 }

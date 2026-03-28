@@ -151,3 +151,31 @@ module "cloudrun" {
   pubsub_topic_ids      = module.pubsub.topic_ids
   firestore_database    = module.firestore.database_name
 }
+
+# ── Cloud Run domain mapping ────────────────────────────────────────────────
+resource "google_cloud_run_domain_mapping" "datafeeder" {
+  name     = "datafeeder.lopezcloud.dev"
+  location = var.region
+  project  = var.project_id
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = module.cloudrun.service_name
+  }
+
+  depends_on = [module.cloudrun]
+}
+
+# ── Artifact Registry ────────────────────────────────────────────────────────
+resource "google_artifact_registry_repository" "app" {
+  location      = var.region
+  repository_id = "data-feeder-images"
+  description   = "Docker images for Data Feeder"
+  format        = "DOCKER"
+  project       = var.project_id
+
+  depends_on = [google_project_service.apis]
+}

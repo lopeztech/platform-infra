@@ -158,3 +158,11 @@ resource "google_service_account_iam_member" "cicd_wif_binding" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
 }
+
+resource "google_service_account_iam_member" "cicd_wif_binding_extra" {
+  for_each = toset(var.github_repos_allowed)
+
+  service_account_id = google_service_account.pipeline["cicd"].name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${each.value}"
+}
