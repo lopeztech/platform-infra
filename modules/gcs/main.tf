@@ -27,6 +27,15 @@ locals {
   }
 }
 
+# Grant GCS service agent permission to use each KMS key for CMEK encryption
+resource "google_kms_crypto_key_iam_member" "gcs_encrypter_decrypter" {
+  for_each = local.layers
+
+  crypto_key_id = each.value.kms_key
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:${data.google_storage_project_service_account.gcs_sa.email_address}"
+}
+
 resource "google_storage_bucket" "medallion" {
   for_each = local.layers
 
@@ -58,6 +67,8 @@ resource "google_storage_bucket" "medallion" {
     project = var.project_id
     managed = "terraform"
   }
+
+  depends_on = [google_kms_crypto_key_iam_member.gcs_encrypter_decrypter]
 }
 
 # Notify Pub/Sub when a new object lands in the Bronze (raw) bucket

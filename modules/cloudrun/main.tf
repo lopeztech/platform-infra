@@ -27,7 +27,7 @@ resource "google_cloud_run_v2_service" "api" {
       dynamic "env" {
         for_each = var.secret_ids
         content {
-          name = upper(replace(split("/secrets/", env.key)[1], "-${var.env}", ""))
+          name = upper(replace(env.key, "-", "_"))
           value_source {
             secret_key_ref {
               secret  = env.value
@@ -76,20 +76,6 @@ resource "google_cloud_run_v2_service" "api" {
   }
 }
 
-# Allow unauthenticated access to /health only — all other routes verify Firebase ID tokens
-# in application code. Cloud Run itself requires auth for prod; API handles token verification.
-resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
-  count    = var.env != "prod" ? 1 : 0  # prod locks down at Cloud Run level too
-  location = google_cloud_run_v2_service.api.location
-  name     = google_cloud_run_v2_service.api.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
-
-resource "google_cloud_run_v2_service_iam_member" "prod_invoker" {
-  count    = var.env == "prod" ? 1 : 0
-  location = google_cloud_run_v2_service.api.location
-  name     = google_cloud_run_v2_service.api.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"  # Firebase token validation is enforced in application middleware
-}
+# Note: allUsers Cloud Run invoker is blocked by org policy constraints/iam.allowedPolicyMemberDomains.
+# To allow public access, either update the org policy or configure IAP on the load balancer.
+# resource "google_cloud_run_v2_service_iam_member" "public_invoker" { ... }

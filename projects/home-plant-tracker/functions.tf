@@ -43,6 +43,40 @@ resource "google_project_iam_member" "plants_function_vertexai" {
   member  = "serviceAccount:${google_service_account.plants_function.email}"
 }
 
+# ── Cloud Build service account permissions ──────────────────────────────────
+# Cloud Functions v2 uses Cloud Build to build the function image. The Cloud Build
+# service account needs permission to read the source bucket and push to Artifact Registry.
+
+resource "google_storage_bucket_iam_member" "cloudbuild_source_reader" {
+  bucket = google_storage_bucket.function_source.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
+resource "google_storage_bucket_iam_member" "gcf_agent_source_reader" {
+  bucket = google_storage_bucket.function_source.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:service-${data.google_project.project.number}@gcf-admin-robot.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_artifactregistry_writer" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
+resource "google_project_iam_member" "cloudbuild_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
+resource "google_project_iam_member" "cloudbuild_storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
 # ── Cloud Function (2nd gen) ──────────────────────────────────────────────────
 # The source ZIP (var.function_source_object) is built by the home-plant-tracker
 # CI pipeline and uploaded to the function_source bucket before this apply runs.
@@ -54,8 +88,8 @@ resource "google_cloudfunctions2_function" "plants" {
   project     = var.project_id
 
   build_config {
-    runtime     = "nodejs20"
-    entry_point = "plantsApi"
+    runtime         = "nodejs20"
+    entry_point     = "plantsApi"
     source {
       storage_source {
         bucket = google_storage_bucket.function_source.name
@@ -92,6 +126,11 @@ resource "google_cloudfunctions2_function" "plants" {
   depends_on = [
     google_project_service.apis,
     google_secret_manager_secret_iam_member.plants_function_gemini_key,
+    google_storage_bucket_iam_member.cloudbuild_source_reader,
+    google_project_iam_member.cloudbuild_artifactregistry_writer,
+    google_project_iam_member.cloudbuild_logging,
+    google_project_iam_member.cloudbuild_storage_admin,
+    google_storage_bucket_iam_member.gcf_agent_source_reader,
   ]
 }
 

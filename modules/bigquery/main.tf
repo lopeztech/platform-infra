@@ -19,8 +19,21 @@ locals {
   }
 }
 
+# BigQuery managed encryption service account needs permission to use the KMS key
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
+resource "google_kms_crypto_key_iam_member" "bq_encrypter_decrypter" {
+  crypto_key_id = var.kms_key_id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:bq-${data.google_project.project.number}@bigquery-encryption.iam.gserviceaccount.com"
+}
+
 resource "google_bigquery_dataset" "pipeline" {
   for_each = local.datasets
+
+  depends_on = [google_kms_crypto_key_iam_member.bq_encrypter_decrypter]
 
   dataset_id                 = "${each.key}_${var.env}"
   friendly_name              = "${title(each.key)} (${var.env})"
@@ -41,11 +54,15 @@ resource "google_bigquery_dataset" "pipeline" {
 
 # ── Audit table: pipeline job history ────────────────────────────────────────
 resource "google_bigquery_table" "pipeline_jobs" {
-  dataset_id = google_bigquery_dataset.pipeline["audit"].dataset_id
-  table_id   = "pipeline_jobs"
+  dataset_id  = google_bigquery_dataset.pipeline["audit"].dataset_id
+  table_id    = "pipeline_jobs"
   description = "One row per ingestion job; updated at each pipeline stage transition"
 
   deletion_protection = var.env == "prod"
+
+  lifecycle {
+    ignore_changes = [encryption_configuration]
+  }
 
   time_partitioning {
     type  = "DAY"
@@ -81,6 +98,10 @@ resource "google_bigquery_table" "dataset_versions" {
   description = "Immutable snapshot metadata per Dataflow run; enables reproducible ML training"
 
   deletion_protection = var.env == "prod"
+
+  lifecycle {
+    ignore_changes = [encryption_configuration]
+  }
 
   time_partitioning {
     type  = "DAY"

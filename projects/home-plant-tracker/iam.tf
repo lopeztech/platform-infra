@@ -105,9 +105,47 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.ref == 'refs/heads/master'"
 }
 
-# Bind the WIF pool → service account impersonation
+# Bind the WIF pool → service account impersonation (platform-infra Terraform CI)
 resource "google_service_account_iam_member" "github_wif_binding" {
   service_account_id = google_service_account.github_deployer.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
+}
+
+# ── WIF provider for home-plant-tracker app CI (function uploads) ─────────────
+# Separate provider so the app repo can upload function ZIPs without needing
+# access to the Terraform deployer credentials used by platform-infra.
+
+resource "google_iam_workload_identity_pool_provider" "github_app" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-app-provider"
+  display_name                       = "GitHub OIDC Provider (home-plant-tracker app CI)"
+  project                            = var.project_id
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+
+  attribute_mapping = {
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.ref"        = "assertion.ref"
+  }
+
+  attribute_condition = "assertion.repository == '${var.github_org}/home-plant-tracker' && assertion.ref == 'refs/heads/main'"
+}
+
+# Bind the app CI WIF → deployer service account
+resource "google_service_account_iam_member" "github_app_wif_binding" {
+  service_account_id = google_service_account.github_deployer.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/home-plant-tracker"
+}
+
+# Allow the deployer SA to upload function ZIPs to the source bucket
+resource "google_storage_bucket_iam_member" "deployer_function_source_writer" {
+  bucket = google_storage_bucket.function_source.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_deployer.email}"
 }

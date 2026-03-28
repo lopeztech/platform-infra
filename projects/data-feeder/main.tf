@@ -30,10 +30,37 @@ provider "google-beta" {
   region  = var.region
 }
 
+# ── APIs ─────────────────────────────────────────────────────────────────────
+resource "google_project_service" "apis" {
+  for_each = toset([
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "sts.googleapis.com",
+    "secretmanager.googleapis.com",
+    "cloudkms.googleapis.com",
+    "pubsub.googleapis.com",
+    "bigquery.googleapis.com",
+    "firestore.googleapis.com",
+    "run.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "dataflow.googleapis.com",
+    "storage.googleapis.com",
+    "monitoring.googleapis.com",
+    "logging.googleapis.com",
+  ])
+
+  service            = each.value
+  disable_on_destroy = false
+}
+
 # ── KMS keys (CMEK) ─────────────────────────────────────────────────────────
 resource "google_kms_key_ring" "data_pipeline" {
   name     = "data-pipeline-${var.env}"
   location = var.region
+
+  depends_on = [google_project_service.apis]
 }
 
 resource "google_kms_crypto_key" "layers" {

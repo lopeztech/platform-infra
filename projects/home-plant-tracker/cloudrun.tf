@@ -56,16 +56,10 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [google_project_service.apis]
 }
 
-# Allow the load balancer to invoke Cloud Run.
-# Ingress is restricted to INTERNAL_LOAD_BALANCER so only the LB can reach it
-# even though allUsers is granted here.
-resource "google_cloud_run_v2_service_iam_member" "lb_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.app.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
+# Note: allUsers Cloud Run invoker is blocked by org policy constraints/iam.allowedPolicyMemberDomains.
+# To allow public access via the load balancer, either update the org policy or configure IAP
+# on the backend service and grant roles/run.invoker to the IAP service account instead.
+# resource "google_cloud_run_v2_service_iam_member" "lb_invoker" { ... }
 
 # Serverless NEG connecting the Load Balancer to Cloud Run
 resource "google_compute_region_network_endpoint_group" "app" {

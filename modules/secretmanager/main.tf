@@ -21,6 +21,21 @@ resource "google_secret_manager_secret" "pipeline" {
   }
 }
 
+# Initial placeholder versions — Cloud Run requires at least one version to exist.
+# Replace firebase-api-key and firebase-admin-sdk-json with real values via:
+#   gcloud secrets versions add <secret-id> --data-file=<file>
+resource "google_secret_manager_secret_version" "initial" {
+  for_each = local.secrets
+
+  secret = google_secret_manager_secret.pipeline[each.key].id
+
+  secret_data = each.key == "gcp-project-id" ? var.project_id : "PLACEHOLDER_SET_MANUALLY"
+
+  lifecycle {
+    ignore_changes = [secret_data]  # don't overwrite real values on re-apply
+  }
+}
+
 # upload-api Cloud Run reads Firebase Admin SDK + project ID
 resource "google_secret_manager_secret_iam_member" "upload_api_access" {
   for_each = toset(["firebase-admin-sdk-json", "gcp-project-id"])

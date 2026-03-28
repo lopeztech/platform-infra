@@ -33,6 +33,11 @@ output "workload_identity_provider" {
   value       = google_iam_workload_identity_pool_provider.github.name
 }
 
+output "app_workload_identity_provider" {
+  description = "WIF provider resource name for home-plant-tracker app CI — set as HPT_FUNCTION_WIF_PROVIDER in GitHub Secrets for lopeztech/home-plant-tracker"
+  value       = google_iam_workload_identity_pool_provider.github_app.name
+}
+
 output "service_account_email" {
   description = "Deployer service account email — set as HOME_PLANT_TRACKER_SA_EMAIL in GitHub Secrets for lopeztech/platform-infra"
   value       = google_service_account.github_deployer.email
@@ -79,5 +84,14 @@ output "github_secrets" {
     VITE_API_BASE_URL               = "https://${google_api_gateway_gateway.app.default_hostname}"
     VITE_GOOGLE_CLIENT_ID           = "(set manually — see iap.tf for instructions)"
     VITE_API_KEY                    = "(run: terraform output -raw api_key)"
+  }
+}
+
+output "app_github_secrets" {
+  description = "Copy these values into GitHub Secrets for lopeztech/home-plant-tracker (function CI)"
+  value = {
+    HPT_FUNCTION_WIF_PROVIDER  = google_iam_workload_identity_pool_provider.github_app.name
+    HPT_FUNCTION_SA_EMAIL      = google_service_account.github_deployer.email
+    FUNCTION_SOURCE_BUCKET     = google_storage_bucket.function_source.name
   }
 }
