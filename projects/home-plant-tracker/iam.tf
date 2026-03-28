@@ -128,7 +128,7 @@ resource "google_service_account_iam_member" "github_wif_binding" {
 resource "google_iam_workload_identity_pool_provider" "github_app" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-app-provider"
-  display_name                       = "GitHub OIDC Provider (home-plant-tracker app CI)"
+  display_name                       = "GitHub OIDC (app CI)"
   project                            = var.project_id
 
   oidc {
