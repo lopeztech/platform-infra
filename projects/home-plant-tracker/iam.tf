@@ -102,7 +102,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 
   # Only tokens from the platform-infra repository are accepted.
-  attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.ref == 'refs/heads/main'"
+  attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.ref == 'refs/heads/master'"
 }
 
 # Bind the WIF pool → service account impersonation
