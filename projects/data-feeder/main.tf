@@ -157,11 +157,6 @@ module "cloudrun" {
 # domain is needed.
 
 # ── Artifact Registry ────────────────────────────────────────────────────────
-import {
-  to = google_artifact_registry_repository.app
-  id = "projects/data-feeder-lcd/locations/australia-southeast1/repositories/data-feeder-images"
-}
-
 resource "google_artifact_registry_repository" "app" {
   location      = var.region
   repository_id = "data-feeder-images"
