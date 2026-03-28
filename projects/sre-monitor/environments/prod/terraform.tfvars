@@ -1,0 +1,7 @@
+project_id               = "sre-monitor-lcd"
+region                   = "australia-southeast1"
+domain                   = "sre.lopezcloud.dev"
+environment              = "prod"
+github_org               = "lopeztech"
+github_repo              = "platform-infra"
+terraform_operator_email = "admin@lopezcloud.dev"

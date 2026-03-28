@@ -1,0 +1,50 @@
+variable "project_id" {
+  description = "Google Cloud project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "Google Cloud region for regional resources"
+  type        = string
+  default     = "australia-southeast1"
+}
+
+variable "domain" {
+  description = "Custom domain for the application (e.g. sre.lopezcloud.dev). Must have a DNS A record pointing to the load balancer IP after apply."
+  type        = string
+}
+
+variable "environment" {
+  description = "Deployment environment label"
+  type        = string
+  default     = "prod"
+}
+
+variable "github_org" {
+  description = "GitHub organisation that owns the infrastructure repository"
+  type        = string
+  default     = "lopeztech"
+}
+
+variable "github_repo" {
+  description = "GitHub repository that triggers deployments (the infrastructure repo)"
+  type        = string
+  default     = "platform-infra"
+}
+
+variable "terraform_operator_email" {
+  description = "Email of the user or service account running terraform apply. Will be granted the minimum IAM roles needed to provision resources."
+  type        = string
+}
+
+variable "cdn_default_ttl" {
+  description = "Default CDN cache TTL in seconds"
+  type        = number
+  default     = 3600
+}
+
+variable "cdn_max_ttl" {
+  description = "Maximum CDN cache TTL in seconds"
+  type        = number
+  default     = 86400
+}
