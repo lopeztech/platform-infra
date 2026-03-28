@@ -1,4 +1,6 @@
 locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+
   topics = {
     "file-uploaded"       = "Triggered by GCS Bronze finalize; consumed by validator Cloud Function"
     "validation-complete" = "Published by validator; consumed by Dataflow Silver→Gold pipeline"
@@ -9,24 +11,22 @@ locals {
 resource "google_pubsub_topic" "pipeline" {
   for_each = local.topics
 
-  name = "${each.key}-${var.env}"
+  name = "${each.key}${local.sfx}"
 
   message_retention_duration = "604800s" # 7 days
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }
 
 # Dead-letter topic — receives messages that exceed max_delivery_attempts
 resource "google_pubsub_topic" "dead_letter" {
-  name = "pipeline-dlq-${var.env}"
+  name = "pipeline-dlq${local.sfx}"
 
   message_retention_duration = "604800s"
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }
@@ -35,7 +35,7 @@ resource "google_pubsub_topic" "dead_letter" {
 
 # Validator Cloud Function pulls from file-uploaded
 resource "google_pubsub_subscription" "validator" {
-  name  = "validator-sub-${var.env}"
+  name  = "validator-sub${local.sfx}"
   topic = google_pubsub_topic.pipeline["file-uploaded"].id
 
   ack_deadline_seconds = 300 # Cloud Functions max timeout
@@ -51,17 +51,16 @@ resource "google_pubsub_subscription" "validator" {
   }
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }
 
 # Dataflow job pulls from validation-complete (long ack deadline for large jobs)
 resource "google_pubsub_subscription" "dataflow" {
-  name  = "dataflow-sub-${var.env}"
+  name  = "dataflow-sub${local.sfx}"
   topic = google_pubsub_topic.pipeline["validation-complete"].id
 
-  ack_deadline_seconds       = 600  # Dataflow jobs can run for 10+ minutes
+  ack_deadline_seconds         = 600  # Dataflow jobs can run for 10+ minutes
   enable_exactly_once_delivery = true
 
   dead_letter_policy {
@@ -75,14 +74,13 @@ resource "google_pubsub_subscription" "dataflow" {
   }
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }
 
 # Alerting subscription on pipeline-failed
 resource "google_pubsub_subscription" "alerting" {
-  name  = "alerting-sub-${var.env}"
+  name  = "alerting-sub${local.sfx}"
   topic = google_pubsub_topic.pipeline["pipeline-failed"].id
 
   ack_deadline_seconds = 60
@@ -93,21 +91,19 @@ resource "google_pubsub_subscription" "alerting" {
   }
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }
 
 # DLQ monitoring subscription — lets ops team inspect failed messages
 resource "google_pubsub_subscription" "dlq_monitor" {
-  name  = "dlq-monitor-sub-${var.env}"
+  name  = "dlq-monitor-sub${local.sfx}"
   topic = google_pubsub_topic.dead_letter.id
 
-  ack_deadline_seconds        = 60
-  message_retention_duration  = "604800s"
+  ack_deadline_seconds       = 60
+  message_retention_duration = "604800s"
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }

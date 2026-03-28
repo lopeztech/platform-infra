@@ -1,5 +1,9 @@
+locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+}
+
 resource "google_cloud_run_v2_service" "api" {
-  name     = "data-feeder-api-${var.env}"
+  name     = "data-feeder-api${local.sfx}"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
@@ -7,7 +11,7 @@ resource "google_cloud_run_v2_service" "api" {
     service_account = var.service_account_email
 
     scaling {
-      min_instance_count = var.env == "prod" ? 1 : 0  # prod: avoid cold starts
+      min_instance_count = 1  # avoid cold starts
       max_instance_count = 10
     }
 
@@ -35,11 +39,6 @@ resource "google_cloud_run_v2_service" "api" {
             }
           }
         }
-      }
-
-      env {
-        name  = "ENV"
-        value = var.env
       }
 
       env {
@@ -71,7 +70,6 @@ resource "google_cloud_run_v2_service" "api" {
   }
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }

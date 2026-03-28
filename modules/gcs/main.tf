@@ -1,4 +1,6 @@
 locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+
   layers = {
     raw = {
       description     = "Bronze zone — immutable raw uploads"
@@ -39,7 +41,7 @@ resource "google_kms_crypto_key_iam_member" "gcs_encrypter_decrypter" {
 resource "google_storage_bucket" "medallion" {
   for_each = local.layers
 
-  name                        = "${var.project_id}-${each.key}-${var.env}"
+  name                        = "${var.project_id}-${each.key}${local.sfx}"
   location                    = var.region
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true  # no per-object ACLs
@@ -62,7 +64,6 @@ resource "google_storage_bucket" "medallion" {
   }
 
   labels = {
-    env     = var.env
     layer   = each.key
     project = var.project_id
     managed = "terraform"

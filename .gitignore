@@ -2,7 +2,7 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
-.terraform.lock.hcl
+# Keep .terraform.lock.hcl committed — it pins provider versions for CI
 *.tfvars.json
 crash.log
 override.tf

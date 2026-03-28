@@ -1,4 +1,6 @@
 locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+
   service_accounts = {
     "upload-api" = "Cloud Run API — signs GCS URLs, writes job metadata to Firestore"
     "validator"  = "Cloud Function — reads Bronze, writes Silver & Rejected, updates Firestore"
@@ -10,8 +12,8 @@ locals {
 resource "google_service_account" "pipeline" {
   for_each = local.service_accounts
 
-  account_id   = "sa-${each.key}-${var.env}"
-  display_name = "${each.key} (${var.env})"
+  account_id   = "sa-${each.key}${local.sfx}"
+  display_name = each.key
   description  = each.value
   project      = var.project_id
 }
@@ -99,46 +101,40 @@ resource "google_project_iam_member" "dataflow_pubsub_publisher" {
 }
 
 # ── cicd (GitHub Actions via Workload Identity Federation) ───────────────────
-# Full Terraform operator permissions — this SA runs terraform apply in CI/CD.
-locals {
-  cicd_roles = [
-    "roles/run.admin",
-    "roles/cloudfunctions.admin",
-    "roles/artifactregistry.writer",
-    "roles/iam.serviceAccountUser",
-    "roles/iam.serviceAccountAdmin",
-    "roles/iam.workloadIdentityPoolAdmin",
-    "roles/storage.admin",
-    "roles/secretmanager.admin",
-    "roles/cloudkms.admin",
-    "roles/pubsub.admin",
-    "roles/bigquery.admin",
-    "roles/datastore.owner",
-    "roles/dataflow.admin",
-    "roles/serviceusage.serviceUsageAdmin",
-    "roles/logging.admin",
-    "roles/monitoring.admin",
-  ]
+resource "google_project_iam_member" "cicd_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
-resource "google_project_iam_member" "cicd" {
-  for_each = toset(local.cicd_roles)
-
+resource "google_project_iam_member" "cicd_functions_admin" {
   project = var.project_id
-  role    = each.value
+  role    = "roles/cloudfunctions.admin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
+resource "google_project_iam_member" "cicd_artifact_writer" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
+resource "google_project_iam_member" "cicd_sa_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
 # ── Workload Identity Federation for GitHub Actions ───────────────────────────
 resource "google_iam_workload_identity_pool" "github" {
-  workload_identity_pool_id = "github-pool-${var.env}"
-  display_name              = "GitHub Actions (${var.env})"
+  workload_identity_pool_id = "github-pool${local.sfx}"
+  display_name              = "GitHub Actions"
   description               = "WIF pool for GitHub Actions — no static keys"
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_oidc" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-oidc-${var.env}"
+  workload_identity_pool_provider_id = "github-oidc${local.sfx}"
   display_name                       = "GitHub OIDC"
 
   attribute_mapping = {

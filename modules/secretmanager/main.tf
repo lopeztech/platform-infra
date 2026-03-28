@@ -1,22 +1,23 @@
 locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+
   secrets = {
-    firebase-api-key          = "Firebase Web API key for the React SPA"
-    firebase-admin-sdk-json   = "Firebase Admin SDK service account JSON (Cloud Run)"
-    gcp-project-id            = "GCP project ID consumed by Cloud Run at runtime"
+    firebase-api-key        = "Firebase Web API key for the React SPA"
+    firebase-admin-sdk-json = "Firebase Admin SDK service account JSON (Cloud Run)"
+    gcp-project-id          = "GCP project ID consumed by Cloud Run at runtime"
   }
 }
 
 resource "google_secret_manager_secret" "pipeline" {
   for_each = local.secrets
 
-  secret_id = "${each.key}-${var.env}"
+  secret_id = "${each.key}${local.sfx}"
 
   replication {
     auto {}
   }
 
   labels = {
-    env     = var.env
     managed = "terraform"
   }
 }

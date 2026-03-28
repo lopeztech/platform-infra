@@ -1,5 +1,8 @@
 variable "project_id" { type = string }
-variable "env"        { type = string }
+variable "env" {
+  type    = string
+  default = ""
+}
 
 variable "github_org" {
   description = "GitHub organisation that triggers deployments"

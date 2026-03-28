@@ -1,13 +1,15 @@
+locals {
+  sfx = var.env != "" ? "-${var.env}" : ""
+}
+
 resource "google_firestore_database" "jobs" {
   project     = var.project_id
-  name        = "data-feeder-${var.env}"
+  name        = "data-feeder${local.sfx}"
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
 
-  # Enable PITR for prod — 7-day point-in-time recovery
-  point_in_time_recovery_enablement = var.env == "prod" ? "POINT_IN_TIME_RECOVERY_ENABLED" : "POINT_IN_TIME_RECOVERY_DISABLED"
-
-  delete_protection_state = var.env == "prod" ? "DELETE_PROTECTION_ENABLED" : "DELETE_PROTECTION_DISABLED"
+  point_in_time_recovery_enablement = "POINT_IN_TIME_RECOVERY_ENABLED"
+  delete_protection_state           = "DELETE_PROTECTION_ENABLED"
 }
 
 # Composite index: query jobs by dataset, sorted by created_at desc

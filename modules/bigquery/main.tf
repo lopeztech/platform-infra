@@ -1,4 +1,6 @@
 locals {
+  sfx = var.env != "" ? "_${var.env}" : ""  # BigQuery uses underscores in dataset IDs
+
   datasets = {
     raw = {
       description          = "External tables over Bronze GCS — schema-on-read, no load required"
@@ -35,10 +37,10 @@ resource "google_bigquery_dataset" "pipeline" {
 
   depends_on = [google_kms_crypto_key_iam_member.bq_encrypter_decrypter]
 
-  dataset_id                 = "${each.key}_${var.env}"
-  friendly_name              = "${title(each.key)} (${var.env})"
-  description                = each.value.description
-  location                   = var.region
+  dataset_id                  = "${each.key}${local.sfx}"
+  friendly_name               = title(each.key)
+  description                 = each.value.description
+  location                    = var.region
   default_table_expiration_ms = each.value.default_table_expiry
 
   default_encryption_configuration {
@@ -46,7 +48,6 @@ resource "google_bigquery_dataset" "pipeline" {
   }
 
   labels = {
-    env     = var.env
     layer   = each.key
     managed = "terraform"
   }
@@ -58,7 +59,7 @@ resource "google_bigquery_table" "pipeline_jobs" {
   table_id    = "pipeline_jobs"
   description = "One row per ingestion job; updated at each pipeline stage transition"
 
-  deletion_protection = var.env == "prod"
+  deletion_protection = true
 
   lifecycle {
     ignore_changes = [encryption_configuration]
@@ -97,7 +98,7 @@ resource "google_bigquery_table" "dataset_versions" {
   table_id    = "dataset_versions"
   description = "Immutable snapshot metadata per Dataflow run; enables reproducible ML training"
 
-  deletion_protection = var.env == "prod"
+  deletion_protection = true
 
   lifecycle {
     ignore_changes = [encryption_configuration]
@@ -111,13 +112,13 @@ resource "google_bigquery_table" "dataset_versions" {
   clustering = ["dataset", "job_id"]
 
   schema = jsonencode([
-    { name = "job_id",          type = "STRING",    mode = "REQUIRED" },
-    { name = "dataset",         type = "STRING",    mode = "REQUIRED" },
-    { name = "schema_version",  type = "STRING",    mode = "NULLABLE" },
-    { name = "snapshot_ts",     type = "TIMESTAMP", mode = "REQUIRED" },
-    { name = "row_count",       type = "INTEGER",   mode = "NULLABLE" },
-    { name = "quality_score",   type = "FLOAT",     mode = "NULLABLE" },
-    { name = "gcs_snapshot_path", type = "STRING",  mode = "NULLABLE" },
-    { name = "bq_snapshot_table", type = "STRING",  mode = "NULLABLE" },
+    { name = "job_id",            type = "STRING",    mode = "REQUIRED" },
+    { name = "dataset",           type = "STRING",    mode = "REQUIRED" },
+    { name = "schema_version",    type = "STRING",    mode = "NULLABLE" },
+    { name = "snapshot_ts",       type = "TIMESTAMP", mode = "REQUIRED" },
+    { name = "row_count",         type = "INTEGER",   mode = "NULLABLE" },
+    { name = "quality_score",     type = "FLOAT",     mode = "NULLABLE" },
+    { name = "gcs_snapshot_path", type = "STRING",    mode = "NULLABLE" },
+    { name = "bq_snapshot_table", type = "STRING",    mode = "NULLABLE" },
   ])
 }
