@@ -83,7 +83,8 @@ resource "google_kms_crypto_key" "layers" {
 module "iam" {
   source = "../../modules/iam"
 
-  project_id = var.project_id
+  project_id           = var.project_id
+  github_repos_allowed = ["data-feeder"]
 }
 
 # ── GCS ──────────────────────────────────────────────────────────────────────

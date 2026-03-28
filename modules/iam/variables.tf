@@ -15,3 +15,9 @@ variable "github_repo" {
   type        = string
   default     = "platform-infra"
 }
+
+variable "github_repos_allowed" {
+  description = "Additional GitHub repos allowed to authenticate via this WIF pool"
+  type        = list(string)
+  default     = []
+}

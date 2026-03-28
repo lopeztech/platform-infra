@@ -143,7 +143,10 @@ resource "google_iam_workload_identity_pool_provider" "github_oidc" {
     "attribute.repository" = "assertion.repository"
   }
 
-  attribute_condition = "attribute.repository == \"${var.github_org}/${var.github_repo}\""
+  attribute_condition = join(" || ", [
+    for repo in concat([var.github_repo], var.github_repos_allowed) :
+    "attribute.repository == \"${var.github_org}/${repo}\""
+  ])
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
