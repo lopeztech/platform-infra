@@ -99,27 +99,33 @@ resource "google_project_iam_member" "dataflow_pubsub_publisher" {
 }
 
 # ── cicd (GitHub Actions via Workload Identity Federation) ───────────────────
-resource "google_project_iam_member" "cicd_run_admin" {
-  project = var.project_id
-  role    = "roles/run.admin"
-  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+# Full Terraform operator permissions — this SA runs terraform apply in CI/CD.
+locals {
+  cicd_roles = [
+    "roles/run.admin",
+    "roles/cloudfunctions.admin",
+    "roles/artifactregistry.writer",
+    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/storage.admin",
+    "roles/secretmanager.admin",
+    "roles/cloudkms.admin",
+    "roles/pubsub.admin",
+    "roles/bigquery.admin",
+    "roles/datastore.owner",
+    "roles/dataflow.admin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/logging.admin",
+    "roles/monitoring.admin",
+  ]
 }
 
-resource "google_project_iam_member" "cicd_functions_admin" {
-  project = var.project_id
-  role    = "roles/cloudfunctions.admin"
-  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
-}
+resource "google_project_iam_member" "cicd" {
+  for_each = toset(local.cicd_roles)
 
-resource "google_project_iam_member" "cicd_artifact_writer" {
   project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
-}
-
-resource "google_project_iam_member" "cicd_sa_user" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountUser"
+  role    = each.value
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 

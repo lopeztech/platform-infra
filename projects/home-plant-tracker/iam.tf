@@ -43,24 +43,31 @@ resource "google_service_account" "github_deployer" {
   depends_on = [google_project_service.apis]
 }
 
-# Write access to the app bucket only
-resource "google_storage_bucket_iam_member" "deployer_object_admin" {
-  bucket = google_storage_bucket.app.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.github_deployer.email}"
+# Full Terraform operator permissions — this SA runs terraform apply in CI/CD.
+locals {
+  deployer_roles = [
+    "roles/run.admin",
+    "roles/cloudfunctions.admin",
+    "roles/artifactregistry.admin",
+    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/storage.admin",
+    "roles/secretmanager.admin",
+    "roles/compute.admin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/logging.admin",
+    "roles/monitoring.admin",
+    "roles/apigateway.admin",
+    "roles/serviceusage.apiKeysAdmin",
+  ]
 }
 
-# Allow CDN cache invalidation after deploys
-resource "google_project_iam_member" "deployer_cdn_invalidator" {
-  project = var.project_id
-  role    = "roles/compute.networkAdmin"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
+resource "google_project_iam_member" "deployer" {
+  for_each = toset(local.deployer_roles)
 
-# Deploy new revisions to Cloud Run
-resource "google_project_iam_member" "deployer_run_developer" {
   project = var.project_id
-  role    = "roles/run.developer"
+  role    = each.value
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
