@@ -152,22 +152,9 @@ module "cloudrun" {
   firestore_database    = module.firestore.database_name
 }
 
-# ── Cloud Run domain mapping ────────────────────────────────────────────────
-resource "google_cloud_run_domain_mapping" "datafeeder" {
-  name     = "datafeeder.lopezcloud.dev"
-  location = var.region
-  project  = var.project_id
-
-  metadata {
-    namespace = var.project_id
-  }
-
-  spec {
-    route_name = module.cloudrun.service_name
-  }
-
-  depends_on = [module.cloudrun]
-}
+# Cloud Run domain mapping is not supported in australia-southeast1.
+# Use the Cloud Run service URL directly, or add a global LB if a custom
+# domain is needed.
 
 # ── Artifact Registry ────────────────────────────────────────────────────────
 resource "google_artifact_registry_repository" "app" {
