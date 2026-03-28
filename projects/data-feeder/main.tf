@@ -15,7 +15,7 @@ terraform {
   backend "gcs" {
     # Populated at init time:
     #   terraform init \
-    #     -backend-config="bucket=<project>-tf-state" \
+    #     -backend-config="bucket=platform-infra-lcd-tf-state" \
     #     -backend-config="prefix=terraform/state/data-feeder/<env>"
   }
 }
@@ -28,12 +28,6 @@ provider "google" {
 provider "google-beta" {
   project = var.project_id
   region  = var.region
-}
-
-locals {
-  # Pin to a release tag in CI. Use "main" only for local development.
-  module_source = "git::https://github.com/lopeztech/platform-infra//modules"
-  module_ref    = var.platform_infra_ref
 }
 
 # ── KMS keys (CMEK) ─────────────────────────────────────────────────────────
@@ -56,7 +50,7 @@ resource "google_kms_crypto_key" "layers" {
 
 # ── IAM ──────────────────────────────────────────────────────────────────────
 module "iam" {
-  source = "${local.module_source}/iam?ref=${local.module_ref}"
+  source = "../../modules/iam"
 
   project_id = var.project_id
   env        = var.env
@@ -64,7 +58,7 @@ module "iam" {
 
 # ── GCS ──────────────────────────────────────────────────────────────────────
 module "gcs" {
-  source = "${local.module_source}/gcs?ref=${local.module_ref}"
+  source = "../../modules/gcs"
 
   project_id      = var.project_id
   region          = var.region
@@ -83,7 +77,7 @@ module "gcs" {
 
 # ── Pub/Sub ──────────────────────────────────────────────────────────────────
 module "pubsub" {
-  source = "${local.module_source}/pubsub?ref=${local.module_ref}"
+  source = "../../modules/pubsub"
 
   project_id = var.project_id
   env        = var.env
@@ -91,7 +85,7 @@ module "pubsub" {
 
 # ── BigQuery ─────────────────────────────────────────────────────────────────
 module "bigquery" {
-  source = "${local.module_source}/bigquery?ref=${local.module_ref}"
+  source = "../../modules/bigquery"
 
   project_id = var.project_id
   region     = var.region
@@ -101,7 +95,7 @@ module "bigquery" {
 
 # ── Firestore ─────────────────────────────────────────────────────────────────
 module "firestore" {
-  source = "${local.module_source}/firestore?ref=${local.module_ref}"
+  source = "../../modules/firestore"
 
   project_id = var.project_id
   region     = var.region
@@ -110,18 +104,18 @@ module "firestore" {
 
 # ── Secret Manager ────────────────────────────────────────────────────────────
 module "secrets" {
-  source = "${local.module_source}/secretmanager?ref=${local.module_ref}"
+  source = "../../modules/secretmanager"
 
-  project_id           = var.project_id
-  env                  = var.env
-  sa_upload_api_email  = module.iam.sa_emails["upload-api"]
-  sa_validator_email   = module.iam.sa_emails["validator"]
-  sa_dataflow_email    = module.iam.sa_emails["dataflow"]
+  project_id          = var.project_id
+  env                 = var.env
+  sa_upload_api_email = module.iam.sa_emails["upload-api"]
+  sa_validator_email  = module.iam.sa_emails["validator"]
+  sa_dataflow_email   = module.iam.sa_emails["dataflow"]
 }
 
 # ── Cloud Run ────────────────────────────────────────────────────────────────
 module "cloudrun" {
-  source = "${local.module_source}/cloudrun?ref=${local.module_ref}"
+  source = "../../modules/cloudrun"
 
   project_id            = var.project_id
   region                = var.region
