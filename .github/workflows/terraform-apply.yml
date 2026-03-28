@@ -1,0 +1,244 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'projects/**'
+      - 'modules/**'
+
+  # Allow triggering from other repos (e.g. home-plant-tracker after building
+  # a new function ZIP) to pass in the function_source_object.
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project to apply (home-plant-tracker or data-feeder)'
+        required: true
+        type: choice
+        options:
+          - home-plant-tracker
+          - data-feeder
+      environment:
+        description: 'Environment to apply'
+        required: true
+        type: choice
+        options:
+          - prod
+          - staging
+          - dev
+      function_source_object:
+        description: 'Cloud Function source ZIP object name (home-plant-tracker only)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  # ── Detect which project directories changed (push trigger only) ─────────────
+  detect-changes:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      home-plant-tracker: ${{ steps.filter.outputs.home-plant-tracker }}
+      data-feeder: ${{ steps.filter.outputs.data-feeder }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            home-plant-tracker:
+              - 'projects/home-plant-tracker/**'
+              - 'modules/**'
+            data-feeder:
+              - 'projects/data-feeder/**'
+              - 'modules/**'
+
+  # ── home-plant-tracker (push trigger) ───────────────────────────────────────
+  apply-home-plant-tracker:
+    needs: detect-changes
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.home-plant-tracker == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      TF_DIR: projects/home-plant-tracker
+      TF_ENV: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
+          service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
+
+      - name: Terraform Init
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state/home-plant-tracker/${{ env.TF_ENV }}" \
+            -input=false
+
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} apply \
+            -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
+            -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}" \
+            -var="function_source_object=${{ secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
+            -input=false \
+            -auto-approve
+
+  # ── data-feeder (push trigger) ───────────────────────────────────────────────
+  apply-data-feeder-dev:
+    needs: detect-changes
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.data-feeder == 'true'
+    runs-on: ubuntu-latest
+    env:
+      TF_DIR: projects/data-feeder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.DATA_FEEDER_WIF_PROVIDER }}
+          service_account: ${{ secrets.DATA_FEEDER_SA_EMAIL }}
+      - name: Terraform Init
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state/data-feeder/dev" \
+            -input=false
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} apply \
+            -var-file="environments/dev/terraform.tfvars" \
+            -input=false \
+            -auto-approve
+
+  apply-data-feeder-staging:
+    needs: apply-data-feeder-dev
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.data-feeder == 'true'
+    runs-on: ubuntu-latest
+    env:
+      TF_DIR: projects/data-feeder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.DATA_FEEDER_WIF_PROVIDER }}
+          service_account: ${{ secrets.DATA_FEEDER_SA_EMAIL }}
+      - name: Terraform Init
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state/data-feeder/staging" \
+            -input=false
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} apply \
+            -var-file="environments/staging/terraform.tfvars" \
+            -input=false \
+            -auto-approve
+
+  apply-data-feeder-prod:
+    needs: apply-data-feeder-staging
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.data-feeder == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      TF_DIR: projects/data-feeder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.DATA_FEEDER_WIF_PROVIDER }}
+          service_account: ${{ secrets.DATA_FEEDER_SA_EMAIL }}
+      - name: Terraform Init
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state/data-feeder/prod" \
+            -input=false
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=${{ env.TF_DIR }} apply \
+            -var-file="environments/prod/terraform.tfvars" \
+            -input=false \
+            -auto-approve
+
+  # ── Manual dispatch — single project/env ────────────────────────────────────
+  apply-dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+
+      - name: Authenticate to GCP (home-plant-tracker)
+        if: inputs.project == 'home-plant-tracker'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
+          service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
+
+      - name: Authenticate to GCP (data-feeder)
+        if: inputs.project == 'data-feeder'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.DATA_FEEDER_WIF_PROVIDER }}
+          service_account: ${{ secrets.DATA_FEEDER_SA_EMAIL }}
+
+      - name: Terraform Init
+        run: |
+          terraform -chdir=projects/${{ inputs.project }} init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state/${{ inputs.project }}/${{ inputs.environment }}" \
+            -input=false
+
+      - name: Terraform Apply (home-plant-tracker)
+        if: inputs.project == 'home-plant-tracker'
+        run: |
+          terraform -chdir=projects/${{ inputs.project }} apply \
+            -var-file="environments/${{ inputs.environment }}/terraform.tfvars" \
+            -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}" \
+            -var="function_source_object=${{ inputs.function_source_object || secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
+            -input=false \
+            -auto-approve
+
+      - name: Terraform Apply (data-feeder)
+        if: inputs.project == 'data-feeder'
+        run: |
+          terraform -chdir=projects/${{ inputs.project }} apply \
+            -var-file="environments/${{ inputs.environment }}/terraform.tfvars" \
+            -input=false \
+            -auto-approve

@@ -141,8 +141,7 @@ resource "google_iam_workload_identity_pool_provider" "github_oidc" {
     "attribute.repository" = "assertion.repository"
   }
 
-  # Restrict to your repository — replace with lopeztech/data-feeder
-  attribute_condition = "attribute.repository == \"lopeztech/data-feeder\""
+  attribute_condition = "attribute.repository == \"${var.github_org}/${var.github_repo}\""
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -152,5 +151,5 @@ resource "google_iam_workload_identity_pool_provider" "github_oidc" {
 resource "google_service_account_iam_member" "cicd_wif_binding" {
   service_account_id = google_service_account.pipeline["cicd"].name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/lopeztech/data-feeder"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
 }
