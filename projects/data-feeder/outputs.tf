@@ -5,3 +5,5 @@ output "service_account_emails" { value = module.iam.sa_emails }
 output "cloud_run_url"          { value = module.cloudrun.service_url }
 output "firestore_database"     { value = module.firestore.database_name }
 output "wif_provider_name"      { value = module.iam.wif_provider_name }
+output "load_balancer_ip"       { value = google_compute_global_address.app.address }
+output "app_url"                { value = "https://${var.domain}" }

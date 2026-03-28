@@ -53,6 +53,8 @@ resource "google_project_service" "apis" {
     "storage.googleapis.com",
     "monitoring.googleapis.com",
     "logging.googleapis.com",
+    "compute.googleapis.com",
+    "certificatemanager.googleapis.com",
   ])
 
   service            = each.value
@@ -151,10 +153,6 @@ module "cloudrun" {
   pubsub_topic_ids      = module.pubsub.topic_ids
   firestore_database    = module.firestore.database_name
 }
-
-# Cloud Run domain mapping is not supported in australia-southeast1.
-# Use the Cloud Run service URL directly, or add a global LB if a custom
-# domain is needed.
 
 # ── Artifact Registry ────────────────────────────────────────────────────────
 resource "google_artifact_registry_repository" "app" {

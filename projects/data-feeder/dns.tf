@@ -6,14 +6,11 @@ data "cloudflare_zone" "lopezcloud" {
   name = "lopezcloud.dev"
 }
 
-# Cloud Run domain mapping provisions a Google-managed SSL certificate and
-# requires a CNAME pointing to ghs.googlehosted.com.  Proxy must be disabled
-# (DNS-only) so Google can complete certificate validation.
 resource "cloudflare_record" "datafeeder" {
   zone_id = data.cloudflare_zone.lopezcloud.id
   name    = "datafeeder"
-  type    = "CNAME"
-  value   = "ghs.googlehosted.com"
-  proxied = false  # DNS-only — Google manages SSL
+  type    = "A"
+  value   = google_compute_global_address.app.address
+  proxied = false  # DNS-only — Google-managed SSL handles TLS
   ttl     = 3600
 }
