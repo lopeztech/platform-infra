@@ -58,6 +58,8 @@ locals {
     "roles/serviceusage.serviceUsageAdmin",
     "roles/logging.admin",
     "roles/monitoring.admin",
+    "roles/datastore.owner",
+    "roles/resourcemanager.projectIamAdmin",
     "roles/apigateway.admin",
     "roles/serviceusage.apiKeysAdmin",
   ]

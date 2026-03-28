@@ -50,6 +50,7 @@ locals {
     "roles/serviceusage.serviceUsageAdmin",
     "roles/logging.admin",
     "roles/monitoring.admin",
+    "roles/resourcemanager.projectIamAdmin",
   ]
 }
 
