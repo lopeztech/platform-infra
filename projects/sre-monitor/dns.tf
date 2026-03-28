@@ -11,6 +11,6 @@ resource "cloudflare_record" "app" {
   name    = "sre"
   type    = "A"
   value   = google_compute_global_address.app.address
-  proxied = true
-  ttl     = 1 # auto when proxied
+  proxied = false  # DNS-only — Google-managed SSL handles TLS
+  ttl     = 3600
 }
