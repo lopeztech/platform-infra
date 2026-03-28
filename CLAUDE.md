@@ -23,7 +23,7 @@ versions.tf         # Root provider requirements (google ~> 5.0, terraform >= 1.
 | Project | Environments | GCP Project ID | Domain |
 |---------|-------------|----------------|--------|
 | home-plant-tracker | prod | home-plant-tracker-lcd | plants.lopezcloud.dev |
-| data-feeder | dev, staging, prod | data-feeder-lcd | — |
+| data-feeder | single | data-feeder-lcd | datafeeder.lopezcloud.dev |
 | sre-monitor | prod | sre-monitor-lcd | sre.lopezcloud.dev |
 
 ## Terraform workflow
@@ -48,7 +48,7 @@ terraform apply -var-file="environments/<env>/terraform.tfvars"
 ## CI/CD
 
 - **Plan**: runs on every PR touching `projects/**` or `modules/**`; posts plan output as PR comment
-- **Apply**: runs on push to `master` (auto-detects changed projects); `data-feeder` promotes dev → staging → prod sequentially; `home-plant-tracker` and `sre-monitor/prod` require a GitHub `production` environment approval
+- **Apply**: runs on push to `master` (auto-detects changed projects); each project has its own workflow; `home-plant-tracker`, `sre-monitor`, and `data-feeder` require a GitHub `production` environment approval
 
 ### Required GitHub secrets
 
