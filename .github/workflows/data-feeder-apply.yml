@@ -46,7 +46,8 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder/dev" \
-            -input=false
+            -input=false \
+            -upgrade
 
       - name: Terraform Apply
         run: |
@@ -79,7 +80,8 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder/staging" \
-            -input=false
+            -input=false \
+            -upgrade
 
       - name: Terraform Apply
         run: |
@@ -113,7 +115,8 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder/prod" \
-            -input=false
+            -input=false \
+            -upgrade
 
       - name: Terraform Apply
         run: |
@@ -146,7 +149,8 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder/${{ inputs.environment }}" \
-            -input=false
+            -input=false \
+            -upgrade
 
       - name: Terraform Apply
         run: |

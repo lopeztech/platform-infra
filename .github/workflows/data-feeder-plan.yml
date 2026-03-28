@@ -36,7 +36,8 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder/${{ matrix.env }}" \
-            -input=false
+            -input=false \
+            -upgrade
 
       - name: Terraform Plan
         id: plan
