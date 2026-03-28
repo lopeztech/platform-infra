@@ -39,6 +39,8 @@ jobs:
             -input=false
 
       - name: Terraform Apply
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           terraform -chdir=${{ env.TF_DIR }} apply \
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
