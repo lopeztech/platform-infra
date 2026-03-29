@@ -20,6 +20,5 @@ resource "cloudflare_record" "api" {
   name    = "api.plants"
   type    = "CNAME"
   value   = google_api_gateway_gateway.app.default_hostname
-  proxied = false  # DNS-only — GCP handles TLS
-  ttl     = 3600
+  proxied = true  # Cloudflare terminates TLS for api.plants.lopezcloud.dev
 }
