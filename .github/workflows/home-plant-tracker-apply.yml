@@ -109,8 +109,8 @@ jobs:
           echo "── Cloud Run ──"
           check "Cloud Run service: plant-tracker" \
             gcloud run services describe plant-tracker --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-          INGRESS=$(gcloud run services describe plant-tracker --project="$PROJECT_ID" --region="$REGION" --format="value(ingress)" 2>/dev/null || echo "")
-          check_value "Cloud Run ingress = INTERNAL_LOAD_BALANCER" "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER" "$INGRESS"
+          INGRESS=$(gcloud run services describe plant-tracker --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
+          check_value "Cloud Run ingress = internal-and-cloud-load-balancing" "internal-and-cloud-load-balancing" "$INGRESS"
 
           echo "── Cloud Function ──"
           check "Cloud Function: plant-tracker-plants-api" \
@@ -178,7 +178,7 @@ jobs:
           check "Uptime check exists" \
             gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:Plant Tracker"
           check "Notification channel exists" \
-            gcloud monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
+            gcloud alpha monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
 
           echo ""
           echo "════════════════════════════════════════"

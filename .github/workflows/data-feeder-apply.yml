@@ -100,8 +100,8 @@ jobs:
           echo "── Cloud Run ──"
           check "Cloud Run service: data-feeder-api" \
             gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-          INGRESS=$(gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(ingress)" 2>/dev/null || echo "")
-          check_value "Cloud Run ingress = INGRESS_TRAFFIC_ALL" "INGRESS_TRAFFIC_ALL" "$INGRESS"
+          INGRESS=$(gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
+          check_value "Cloud Run ingress = all" "all" "$INGRESS"
 
           echo "── Load Balancer ──"
           check "Global IP: data-feeder-ip" \
@@ -181,7 +181,7 @@ jobs:
           check "Uptime check exists" \
             gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:data-feeder"
           check "Notification channel exists" \
-            gcloud monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
+            gcloud alpha monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
 
           echo ""
           echo "════════════════════════════════════════"
