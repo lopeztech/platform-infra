@@ -50,6 +50,7 @@ resource "google_project_service" "apis" {
     "cloudbuild.googleapis.com",
     "artifactregistry.googleapis.com",
     "dataflow.googleapis.com",
+    "eventarc.googleapis.com",
     "storage.googleapis.com",
     "monitoring.googleapis.com",
     "logging.googleapis.com",
@@ -104,6 +105,9 @@ module "gcs" {
     rejected = google_kms_crypto_key.layers["bronze"].id
   }
 
+  cors_origins    = ["https://${var.domain}", "http://localhost:5173"]
+  upload_sa_email = module.iam.sa_emails["upload-api"]
+
   depends_on = [module.iam]
 }
 
@@ -152,6 +156,38 @@ module "cloudrun" {
   gcs_bucket_names      = module.gcs.bucket_names
   pubsub_topic_ids      = module.pubsub.topic_ids
   firestore_database    = module.firestore.database_name
+}
+
+# ── Cloud Build — default compute SA permissions ────────────────────────────
+# Cloud Build (used by Cloud Run source deploys) needs project-level storage
+# read access to fetch source from internal gcf-v2-sources / cloud-run-source buckets.
+
+data "google_compute_default_service_account" "default" {
+  project = var.project_id
+}
+
+resource "google_project_iam_member" "cloudbuild_storage_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
+# ── Monitoring ──────────────────────────────────────────────────────────────
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  project_id         = var.project_id
+  notification_email = var.notification_email
+
+  services = {
+    "data-feeder-api" = {
+      domain       = var.domain
+      path         = "/health"
+      display_name = "Data Feeder API"
+    }
+  }
+
+  depends_on = [google_project_service.apis]
 }
 
 # ── Artifact Registry ────────────────────────────────────────────────────────

@@ -46,3 +46,111 @@ jobs:
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
             -input=false \
             -auto-approve
+
+  verify:
+    needs: apply
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: sre-monitor-lcd
+      REGION: australia-southeast1
+      DOMAIN: sre.lopezcloud.dev
+      ENV: prod
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.SRE_MONITOR_WIF_PROVIDER }}
+          service_account: ${{ secrets.SRE_MONITOR_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify infrastructure
+        run: |
+          set -euo pipefail
+          PASS=0; FAIL=0; ERRORS=()
+
+          check() {
+            local label="$1"; shift
+            if "$@" &>/dev/null; then
+              echo "  ✅ $label"; ((PASS++))
+            else
+              echo "  ❌ $label"; ((FAIL++)); ERRORS+=("$label")
+            fi
+          }
+
+          check_value() {
+            local label="$1" expected="$2" actual="$3"
+            if [[ "$actual" == *"$expected"* ]]; then
+              echo "  ✅ $label"; ((PASS++))
+            else
+              echo "  ❌ $label (expected: $expected, got: $actual)"; ((FAIL++)); ERRORS+=("$label")
+            fi
+          }
+
+          echo "── APIs ──"
+          for api in run.googleapis.com compute.googleapis.com \
+                     storage.googleapis.com iam.googleapis.com \
+                     artifactregistry.googleapis.com secretmanager.googleapis.com; do
+            check "API: $api" \
+              gcloud services list --project="$PROJECT_ID" --filter="config.name=$api" --format="value(state)"
+          done
+
+          echo "── Cloud Run ──"
+          check "Cloud Run service: sre-monitor" \
+            gcloud run services describe sre-monitor --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
+          INGRESS=$(gcloud run services describe sre-monitor --project="$PROJECT_ID" --region="$REGION" --format="value(ingress)" 2>/dev/null || echo "")
+          check_value "Cloud Run ingress = INTERNAL_LOAD_BALANCER" "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER" "$INGRESS"
+
+          echo "── Load Balancer ──"
+          check "Global IP: sre-monitor-ip-${ENV}" \
+            gcloud compute addresses describe "sre-monitor-ip-${ENV}" --project="$PROJECT_ID" --global --format="value(address)"
+          check "SSL cert: sre-monitor-cert-${ENV}" \
+            gcloud compute ssl-certificates describe "sre-monitor-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
+          CERT_DOMAINS=$(gcloud compute ssl-certificates describe "sre-monitor-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(managed.domains)" 2>/dev/null || echo "")
+          check_value "SSL cert covers $DOMAIN" "$DOMAIN" "$CERT_DOMAINS"
+          check "Backend: sre-monitor-backend-${ENV}" \
+            gcloud compute backend-services describe "sre-monitor-backend-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
+          CDN_MODE=$(gcloud compute backend-services describe "sre-monitor-backend-${ENV}" --project="$PROJECT_ID" --global --format="value(cdnPolicy.cacheMode)" 2>/dev/null || echo "")
+          check_value "CDN enabled (USE_ORIGIN_HEADERS)" "USE_ORIGIN_HEADERS" "$CDN_MODE"
+          check "URL map: sre-monitor-url-map-${ENV}" \
+            gcloud compute url-maps describe "sre-monitor-url-map-${ENV}" --project="$PROJECT_ID" --format="value(name)"
+          check "HTTPS proxy: sre-monitor-https-proxy-${ENV}" \
+            gcloud compute target-https-proxies describe "sre-monitor-https-proxy-${ENV}" --project="$PROJECT_ID" --format="value(name)"
+          check "HTTPS forwarding rule (443)" \
+            gcloud compute forwarding-rules describe "sre-monitor-https-forwarding-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
+          check "HTTP redirect rule (80)" \
+            gcloud compute forwarding-rules describe "sre-monitor-http-forwarding-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
+          check "NEG: sre-monitor-neg-${ENV}" \
+            gcloud compute network-endpoint-groups describe "sre-monitor-neg-${ENV}" --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
+
+          echo "── Artifact Registry ──"
+          check "AR repo: sre-monitor-images" \
+            gcloud artifacts repositories describe sre-monitor-images --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
+
+          echo "── GCS Bucket ──"
+          check "GCS bucket: ${PROJECT_ID}-sre-monitor-${ENV}" \
+            gcloud storage buckets describe "gs://${PROJECT_ID}-sre-monitor-${ENV}" --format="value(name)"
+
+          echo "── Service Accounts ──"
+          check "SA: sre-monitor-deployer" \
+            gcloud iam service-accounts describe "sre-monitor-deployer@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
+
+          echo "── WIF ──"
+          check "WIF pool: sre-monitor-github-pool" \
+            gcloud iam workload-identity-pools describe sre-monitor-github-pool --project="$PROJECT_ID" --location=global --format="value(name)"
+
+          echo "── Monitoring ──"
+          check "Uptime check exists" \
+            gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:SRE Monitor"
+          check "Notification channel exists" \
+            gcloud monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
+
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "  Passed: $PASS  Failed: $FAIL"
+          if [[ ${#ERRORS[@]} -gt 0 ]]; then
+            echo "  Failures:"
+            for e in "${ERRORS[@]}"; do echo "    - $e"; done
+          fi
+          echo "════════════════════════════════════════"
+          [[ $FAIL -eq 0 ]]

@@ -40,6 +40,20 @@ resource "google_cloud_run_v2_service" "app" {
           memory = "512Mi"
         }
       }
+
+      startup_probe {
+        http_get { path = "/health" }
+        initial_delay_seconds = 0
+        period_seconds        = 10
+        failure_threshold     = 3
+        timeout_seconds       = 3
+      }
+
+      liveness_probe {
+        http_get { path = "/health" }
+        initial_delay_seconds = 5
+        period_seconds        = 30
+      }
     }
     scaling {
       min_instance_count = 0

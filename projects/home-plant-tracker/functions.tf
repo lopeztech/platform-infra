@@ -77,6 +77,15 @@ resource "google_project_iam_member" "cloudbuild_storage_admin" {
   member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
 }
 
+# Cloud Functions v2 copies source to an internal gcf-v2-sources-* bucket.
+# The default compute SA (used by Cloud Build) needs project-level read access
+# to fetch the source during the build step.
+resource "google_project_iam_member" "cloudbuild_storage_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
 # ── Cloud Function (2nd gen) ──────────────────────────────────────────────────
 # The source ZIP (var.function_source_object) is built by the home-plant-tracker
 # CI pipeline and uploaded to the function_source bucket before this apply runs.

@@ -59,6 +59,16 @@ resource "google_storage_bucket" "medallion" {
     }
   }
 
+  dynamic "cors" {
+    for_each = each.key == "raw" && length(var.cors_origins) > 0 ? [1] : []
+    content {
+      origin          = var.cors_origins
+      method          = ["GET", "HEAD", "PUT", "OPTIONS"]
+      response_header = ["Content-Type", "Content-Range", "Content-Length", "ETag", "x-goog-*"]
+      max_age_seconds = 3600
+    }
+  }
+
   encryption {
     default_kms_key_name = each.value.kms_key
   }
@@ -70,6 +80,14 @@ resource "google_storage_bucket" "medallion" {
   }
 
   depends_on = [google_kms_crypto_key_iam_member.gcs_encrypter_decrypter]
+}
+
+# Upload API service account needs read/write access to the raw bucket
+resource "google_storage_bucket_iam_member" "upload_api_raw" {
+  count  = var.upload_sa_email != "" ? 1 : 0
+  bucket = google_storage_bucket.medallion["raw"].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.upload_sa_email}"
 }
 
 # Notify Pub/Sub when a new object lands in the Bronze (raw) bucket

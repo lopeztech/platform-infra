@@ -43,6 +43,12 @@ variable "terraform_operator_email" {
   type        = string
 }
 
+variable "notification_email" {
+  description = "Email address for monitoring alert notifications"
+  type        = string
+  default     = "admin@lopezcloud.dev"
+}
+
 variable "cdn_default_ttl" {
   description = "Default CDN cache TTL in seconds"
   type        = number

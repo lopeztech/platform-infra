@@ -63,6 +63,24 @@ resource "google_project_iam_member" "validator_log_writer" {
   member  = "serviceAccount:${google_service_account.pipeline["validator"].email}"
 }
 
+resource "google_project_iam_member" "validator_storage_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.pipeline["validator"].email}"
+}
+
+resource "google_project_iam_member" "validator_storage_creator" {
+  project = var.project_id
+  role    = "roles/storage.objectCreator"
+  member  = "serviceAccount:${google_service_account.pipeline["validator"].email}"
+}
+
+resource "google_project_iam_member" "validator_eventarc_receiver" {
+  project = var.project_id
+  role    = "roles/eventarc.eventReceiver"
+  member  = "serviceAccount:${google_service_account.pipeline["validator"].email}"
+}
+
 # ── dataflow ─────────────────────────────────────────────────────────────────
 resource "google_project_iam_member" "dataflow_worker" {
   project = var.project_id

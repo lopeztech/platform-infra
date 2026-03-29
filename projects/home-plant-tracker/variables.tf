@@ -61,6 +61,12 @@ variable "iap_allowed_users" {
   default     = []
 }
 
+variable "notification_email" {
+  description = "Email address for monitoring alert notifications"
+  type        = string
+  default     = "admin@lopezcloud.dev"
+}
+
 variable "function_source_object" {
   description = "GCS object name of the pre-built Cloud Function ZIP (e.g. plants-abc123def.zip). Built and uploaded by the home-plant-tracker CI pipeline before triggering Terraform."
   type        = string

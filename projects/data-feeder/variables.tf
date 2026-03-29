@@ -14,3 +14,9 @@ variable "domain" {
   type        = string
   default     = "datafeeder.lopezcloud.dev"
 }
+
+variable "notification_email" {
+  description = "Email address for monitoring alert notifications"
+  type        = string
+  default     = "admin@lopezcloud.dev"
+}

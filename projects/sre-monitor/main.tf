@@ -30,6 +30,7 @@ resource "google_project_service" "apis" {
     "sts.googleapis.com",
     "run.googleapis.com",
     "artifactregistry.googleapis.com",
+    "monitoring.googleapis.com",
     "secretmanager.googleapis.com",
   ])
 
