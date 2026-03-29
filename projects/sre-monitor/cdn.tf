@@ -23,8 +23,8 @@ resource "google_compute_managed_ssl_certificate" "app" {
   depends_on = [google_project_service.apis]
 }
 
-# ── Backend Service ────────────────────────────────────────────────────────────
-# Routes /api/* to Cloud Run; caches everything else as static content.
+# ── Backend Service — Cloud Run API ────────────────────────────────────────────
+# Serves /api/* requests via Cloud Run.
 
 resource "google_compute_backend_service" "app" {
   name                  = "${local.app_name}-backend-${var.environment}"
@@ -51,11 +51,45 @@ resource "google_compute_backend_service" "app" {
   }
 }
 
+# ── Backend Bucket — GCS static React app ─────────────────────────────────────
+# Serves the compiled React SPA from GCS via CDN.
+
+resource "google_compute_backend_bucket" "app_static" {
+  name        = "${local.app_name}-static-${var.environment}"
+  bucket_name = google_storage_bucket.app.name
+  enable_cdn  = true
+
+  cdn_policy {
+    cache_mode                   = "USE_ORIGIN_HEADERS"
+    default_ttl                  = var.cdn_default_ttl
+    max_ttl                      = var.cdn_max_ttl
+    client_ttl                   = var.cdn_default_ttl
+    negative_caching             = true
+    serve_while_stale            = 86400
+  }
+}
+
 # ── URL Map ────────────────────────────────────────────────────────────────────
+# Default → GCS backend bucket (React SPA), /api/* → Cloud Run.
 
 resource "google_compute_url_map" "app_https" {
   name            = "${local.app_name}-url-map-${var.environment}"
-  default_service = google_compute_backend_service.app.id
+  default_service = google_compute_backend_bucket.app_static.id
+
+  host_rule {
+    hosts        = [var.domain]
+    path_matcher = "app"
+  }
+
+  path_matcher {
+    name            = "app"
+    default_service = google_compute_backend_bucket.app_static.id
+
+    path_rule {
+      paths   = ["/api/*"]
+      service = google_compute_backend_service.app.id
+    }
+  }
 }
 
 # ── HTTPS Proxy ────────────────────────────────────────────────────────────────

@@ -32,6 +32,12 @@ variable "github_repo" {
   default     = "platform-infra"
 }
 
+variable "app_github_repo" {
+  description = "GitHub repository for the application code (deploys app artifacts to GCS)"
+  type        = string
+  default     = "sre-monitor"
+}
+
 variable "terraform_operator_email" {
   description = "Email of the user or service account running terraform apply. Will be granted the minimum IAM roles needed to provision resources."
   type        = string

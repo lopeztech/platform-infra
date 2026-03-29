@@ -38,3 +38,10 @@ resource "google_storage_bucket" "app" {
 
   depends_on = [google_project_service.apis]
 }
+
+# The load balancer's backend bucket requires public object access to serve content.
+resource "google_storage_bucket_iam_member" "public_read" {
+  bucket = google_storage_bucket.app.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}

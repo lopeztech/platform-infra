@@ -104,3 +104,42 @@ resource "google_service_account_iam_member" "github_wif_binding" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
 }
+
+# ── Workload Identity Federation — App Repo ──────────────────────────────────
+# Allows the sre-monitor application repo to authenticate for deployments
+# (GCS upload, CDN cache invalidation).
+
+resource "google_iam_workload_identity_pool" "github_app" {
+  workload_identity_pool_id = "${local.app_name}-app-github-pool"
+  display_name              = "GitHub Actions Pool (App Repo)"
+  description               = "Identity pool for ${var.app_github_repo} app repo OIDC tokens"
+  project                   = var.project_id
+
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_iam_workload_identity_pool_provider" "github_app" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_app.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-app-provider"
+  display_name                       = "GitHub OIDC Provider (App Repo)"
+  project                            = var.project_id
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+
+  attribute_mapping = {
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.ref"        = "assertion.ref"
+  }
+
+  attribute_condition = "assertion.repository == '${var.github_org}/${var.app_github_repo}' && assertion.ref == 'refs/heads/master'"
+}
+
+resource "google_service_account_iam_member" "github_app_wif_binding" {
+  service_account_id = google_service_account.github_deployer.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_app.name}/attribute.repository/${var.github_org}/${var.app_github_repo}"
+}
