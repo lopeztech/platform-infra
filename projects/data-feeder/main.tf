@@ -115,7 +115,8 @@ module "gcs" {
 module "pubsub" {
   source = "../../modules/pubsub"
 
-  project_id = var.project_id
+  project_id      = var.project_id
+  upload_sa_email = module.iam.sa_emails["upload-api"]
 }
 
 # ── BigQuery ─────────────────────────────────────────────────────────────────

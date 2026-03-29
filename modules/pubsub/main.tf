@@ -95,6 +95,14 @@ resource "google_pubsub_subscription" "alerting" {
   }
 }
 
+# Upload API needs to publish to file-uploaded for retriggering jobs
+resource "google_pubsub_topic_iam_member" "upload_api_publisher" {
+  count  = var.upload_sa_email != "" ? 1 : 0
+  topic  = google_pubsub_topic.pipeline["file-uploaded"].id
+  role   = "roles/pubsub.publisher"
+  member = "serviceAccount:${var.upload_sa_email}"
+}
+
 # DLQ monitoring subscription — lets ops team inspect failed messages
 resource "google_pubsub_subscription" "dlq_monitor" {
   name  = "dlq-monitor-sub${local.sfx}"
