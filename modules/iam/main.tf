@@ -82,6 +82,12 @@ resource "google_project_iam_member" "validator_eventarc_receiver" {
 }
 
 # ── dataflow ─────────────────────────────────────────────────────────────────
+resource "google_project_iam_member" "dataflow_storage_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.pipeline["dataflow"].email}"
+}
+
 resource "google_project_iam_member" "dataflow_worker" {
   project = var.project_id
   role    = "roles/dataflow.worker"

@@ -183,6 +183,15 @@ resource "google_cloud_run_v2_service_iam_member" "validator_invoker" {
   member   = "serviceAccount:${module.iam.sa_emails["validator"]}"
 }
 
+# Allow Eventarc/Pub/Sub to invoke the loader Cloud Run service.
+resource "google_cloud_run_v2_service_iam_member" "loader_invoker" {
+  project  = var.project_id
+  location = var.region
+  name     = "loader"
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${module.iam.sa_emails["dataflow"]}"
+}
+
 # ── Monitoring ──────────────────────────────────────────────────────────────
 module "monitoring" {
   source = "../../modules/monitoring"
