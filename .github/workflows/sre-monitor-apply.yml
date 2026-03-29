@@ -142,8 +142,8 @@ jobs:
           echo "── Monitoring ──"
           check "Uptime check exists" \
             gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:SRE Monitor"
-          check "Notification channel exists" \
-            gcloud alpha monitoring channels list --project="$PROJECT_ID" --format="value(displayName)" --filter="type=email"
+          check "Alert policy exists" \
+            gcloud monitoring policies list --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:SRE Monitor"
 
           echo ""
           echo "════════════════════════════════════════"
