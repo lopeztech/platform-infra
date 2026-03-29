@@ -38,6 +38,24 @@ resource "google_project_iam_member" "upload_api_secret_accessor" {
   member  = "serviceAccount:${google_service_account.pipeline["upload-api"].email}"
 }
 
+resource "google_project_iam_member" "upload_api_storage_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.pipeline["upload-api"].email}"
+}
+
+resource "google_project_iam_member" "upload_api_bq_viewer" {
+  project = var.project_id
+  role    = "roles/bigquery.dataViewer"
+  member  = "serviceAccount:${google_service_account.pipeline["upload-api"].email}"
+}
+
+resource "google_project_iam_member" "upload_api_bq_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.pipeline["upload-api"].email}"
+}
+
 # ── validator ───────────────────────────────────────────────────────────────
 resource "google_project_iam_member" "validator_firestore" {
   project = var.project_id
