@@ -80,18 +80,18 @@ jobs:
           check() {
             local label="$1"; shift
             if "$@" &>/dev/null; then
-              echo "  ✅ $label"; ((PASS++))
+              echo "  ✅ $label"; ((PASS++)) || true
             else
-              echo "  ❌ $label"; ((FAIL++)); ERRORS+=("$label")
+              echo "  ❌ $label"; ((FAIL++)) || true; ERRORS+=("$label")
             fi
           }
 
           check_value() {
             local label="$1" expected="$2" actual="$3"
             if [[ "$actual" == *"$expected"* ]]; then
-              echo "  ✅ $label"; ((PASS++))
+              echo "  ✅ $label"; ((PASS++)) || true
             else
-              echo "  ❌ $label (expected: $expected, got: $actual)"; ((FAIL++)); ERRORS+=("$label")
+              echo "  ❌ $label (expected: $expected, got: $actual)"; ((FAIL++)) || true; ERRORS+=("$label")
             fi
           }
 
