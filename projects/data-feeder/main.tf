@@ -173,6 +173,16 @@ resource "google_project_iam_member" "cloudbuild_storage_viewer" {
   member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
 }
 
+# Allow Eventarc/Pub/Sub to invoke the validator Cloud Run service.
+# The default compute SA pushes Pub/Sub messages to the validator's HTTP endpoint.
+resource "google_cloud_run_v2_service_iam_member" "validator_invoker" {
+  project  = var.project_id
+  location = var.region
+  name     = "validator"
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
 # ── Monitoring ──────────────────────────────────────────────────────────────
 module "monitoring" {
   source = "../../modules/monitoring"
