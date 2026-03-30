@@ -199,6 +199,24 @@ resource "google_project_iam_member" "cicd_aiplatform_user" {
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
+resource "google_project_iam_member" "cicd_bq_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
+resource "google_project_iam_member" "cicd_bq_data_editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
+resource "google_project_iam_member" "cicd_storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
 resource "google_project_iam_member" "cicd_artifact_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
