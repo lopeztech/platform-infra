@@ -5,7 +5,7 @@ locals {
     "upload-api" = "Cloud Run API — signs GCS URLs, writes job metadata to Firestore"
     "validator"  = "Cloud Function — reads Bronze, writes Silver & Rejected, updates Firestore"
     "dataflow"   = "Dataflow workers — reads Silver, writes BigQuery Gold, updates Firestore"
-    "ml"         = "ML pipelines — trains models on Vertex AI, reads BigQuery, writes GCS artifacts"
+    "ml-pipeline" = "ML pipelines — trains models on Vertex AI, reads BigQuery, writes GCS artifacts"
     "cicd"       = "GitHub Actions via Workload Identity — deploys Cloud Run & Cloud Functions"
   }
 }
@@ -147,37 +147,37 @@ resource "google_project_iam_member" "dataflow_pubsub_publisher" {
 resource "google_project_iam_member" "ml_aiplatform_user" {
   project = var.project_id
   role    = "roles/aiplatform.user"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 resource "google_project_iam_member" "ml_bq_viewer" {
   project = var.project_id
   role    = "roles/bigquery.dataViewer"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 resource "google_project_iam_member" "ml_bq_job_user" {
   project = var.project_id
   role    = "roles/bigquery.jobUser"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 resource "google_project_iam_member" "ml_storage_admin" {
   project = var.project_id
   role    = "roles/storage.objectAdmin"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 resource "google_project_iam_member" "ml_ar_reader" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 resource "google_project_iam_member" "ml_bq_data_editor" {
   project = var.project_id
   role    = "roles/bigquery.dataEditor"
-  member  = "serviceAccount:${google_service_account.pipeline["ml"].email}"
+  member  = "serviceAccount:${google_service_account.pipeline["ml-pipeline"].email}"
 }
 
 # ── cicd (GitHub Actions via Workload Identity Federation) ───────────────────
