@@ -6,6 +6,11 @@ output "sa_emails" {
   }
 }
 
+output "ml_sa_email" {
+  description = "ML pipeline service account email"
+  value       = google_service_account.ml.email
+}
+
 output "wif_provider_name" {
   description = "Full resource name of the Workload Identity pool provider (used in GitHub Actions)"
   value       = google_iam_workload_identity_pool_provider.github_oidc.name
