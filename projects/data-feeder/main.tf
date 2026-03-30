@@ -51,6 +51,8 @@ resource "google_project_service" "apis" {
     "artifactregistry.googleapis.com",
     "dataflow.googleapis.com",
     "eventarc.googleapis.com",
+    "aiplatform.googleapis.com",
+    "notebooks.googleapis.com",
     "storage.googleapis.com",
     "monitoring.googleapis.com",
     "logging.googleapis.com",
@@ -205,6 +207,21 @@ module "monitoring" {
       path         = "/health"
       display_name = "Data Feeder API"
     }
+  }
+
+  depends_on = [google_project_service.apis]
+}
+
+# ── ML Artifacts Bucket ──────────────────────────────────────────────────────
+resource "google_storage_bucket" "ml_artifacts" {
+  name                        = "${var.project_id}-ml-artifacts"
+  location                    = var.region
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
+
+  labels = {
+    purpose = "ml-artifacts"
+    managed = "terraform"
   }
 
   depends_on = [google_project_service.apis]
