@@ -217,6 +217,12 @@ resource "google_project_iam_member" "cicd_storage_admin" {
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
+resource "google_service_account_iam_member" "cicd_impersonate_ml" {
+  service_account_id = google_service_account.pipeline["ml-pipeline"].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
 resource "google_project_iam_member" "cicd_artifact_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
