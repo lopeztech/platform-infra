@@ -74,6 +74,11 @@ output "function_url" {
   value       = google_cloudfunctions2_function.plants.service_config[0].uri
 }
 
+output "ml_data_bucket" {
+  description = "GCS bucket for ML training data exports"
+  value       = google_storage_bucket.ml_data.name
+}
+
 output "github_secrets" {
   description = "Copy these values into your GitHub repository secrets for lopeztech/platform-infra"
   value = {

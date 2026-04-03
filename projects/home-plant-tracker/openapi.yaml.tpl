@@ -299,6 +299,112 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/{plantId}/water:
+    post:
+      operationId: waterPlant
+      summary: Log a watering event for a plant
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 30.0
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Updated plant with new watering event
+          schema:
+            $ref: "#/definitions/PlantWithId"
+        "404":
+          description: Not found
+    options:
+      operationId: corsWaterPlant
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/watering-pattern:
+    get:
+      operationId: getWateringPattern
+      summary: Analyse watering pattern for a plant (heuristic or ML-powered)
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Watering pattern analysis
+          schema:
+            type: object
+            properties:
+              pattern:
+                type: string
+              confidence:
+                type: number
+              contributingFactors:
+                type: array
+                items:
+                  type: string
+        "404":
+          description: Not found
+    options:
+      operationId: corsWateringPattern
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /recommend:
+    post:
+      operationId: recommendCare
+      summary: Get AI-powered care recommendations for a plant species
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              species:
+                type: string
+      responses:
+        "200":
+          description: Care recommendations
+    options:
+      operationId: corsRecommend
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
   /config/floorplan:
     get:
       operationId: getFloorplan

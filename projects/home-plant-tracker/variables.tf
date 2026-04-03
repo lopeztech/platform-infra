@@ -71,3 +71,20 @@ variable "function_source_object" {
   description = "GCS object name of the pre-built Cloud Function ZIP (e.g. plants-abc123def.zip). Built and uploaded by the home-plant-tracker CI pipeline before triggering Terraform."
   type        = string
 }
+
+variable "ml_admin_token" {
+  description = "Admin token for ML export and anomaly scan endpoints (x-admin-token header)"
+  type        = string
+  sensitive   = true
+}
+
+variable "billing_account" {
+  description = "GCP billing account ID (format: XXXXXX-XXXXXX-XXXXXX)"
+  type        = string
+}
+
+variable "monthly_budget_usd" {
+  description = "Monthly budget amount in USD"
+  type        = number
+  default     = 20
+}

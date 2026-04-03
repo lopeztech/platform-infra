@@ -41,8 +41,10 @@ resource "google_project_service" "apis" {
     "servicemanagement.googleapis.com",
     "apikeys.googleapis.com",
     "aiplatform.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "monitoring.googleapis.com",
     "secretmanager.googleapis.com",
+    "billingbudgets.googleapis.com",
   ])
 
   project            = var.project_id

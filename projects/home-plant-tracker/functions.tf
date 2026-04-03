@@ -128,6 +128,13 @@ resource "google_cloudfunctions2_function" "plants" {
       secret     = google_secret_manager_secret.gemini_api_key.secret_id
       version    = "latest"
     }
+
+    secret_environment_variables {
+      key        = "ML_ADMIN_TOKEN"
+      project_id = var.project_id
+      secret     = google_secret_manager_secret.ml_admin_token.secret_id
+      version    = "latest"
+    }
   }
 
   labels = local.labels
@@ -135,6 +142,7 @@ resource "google_cloudfunctions2_function" "plants" {
   depends_on = [
     google_project_service.apis,
     google_secret_manager_secret_iam_member.plants_function_gemini_key,
+    google_secret_manager_secret_iam_member.plants_function_ml_admin_token,
     google_storage_bucket_iam_member.cloudbuild_source_reader,
     google_project_iam_member.cloudbuild_artifactregistry_writer,
     google_project_iam_member.cloudbuild_logging,
