@@ -55,8 +55,31 @@ jobs:
             -input=false \
             -auto-approve
 
-  verify:
+  invalidate-cdn:
     needs: apply
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: home-plant-tracker-lcd
+      URL_MAP: plant-tracker-url-map-prod
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
+          service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Invalidate Cloud CDN cache
+        run: |
+          gcloud compute url-maps invalidate-cdn-cache "$URL_MAP" \
+            --project="$PROJECT_ID" \
+            --path="/*" \
+            --async
+
+  verify:
+    needs: [apply, invalidate-cdn]
+    if: always() && needs.apply.result == 'success'
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: home-plant-tracker-lcd
