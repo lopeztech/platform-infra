@@ -62,6 +62,7 @@ locals {
     "roles/resourcemanager.projectIamAdmin",
     "roles/apigateway.admin",
     "roles/serviceusage.apiKeysAdmin",
+    "roles/cloudscheduler.admin",
   ]
 }
 
