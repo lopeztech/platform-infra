@@ -108,7 +108,8 @@ module "gcs" {
   }
 
   cors_origins    = ["https://${var.domain}", "http://localhost:5173"]
-  upload_sa_email = module.iam.sa_emails["upload-api"]
+  upload_sa_email    = module.iam.sa_emails["upload-api"]
+  validator_sa_email = module.iam.sa_emails["validator"]
 
   depends_on = [module.iam]
 }
