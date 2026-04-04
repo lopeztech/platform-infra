@@ -13,9 +13,23 @@ resource "google_secret_manager_secret" "gemini_api_key" {
   depends_on = [google_project_service.apis]
 }
 
+resource "google_apikeys_key" "gemini" {
+  name         = "${local.app_name}-gemini-key-${var.environment}"
+  display_name = "Plant Tracker Gemini API Key"
+  project      = var.project_id
+
+  restrictions {
+    api_targets {
+      service = "generativelanguage.googleapis.com"
+    }
+  }
+
+  depends_on = [google_project_service.apis]
+}
+
 resource "google_secret_manager_secret_version" "gemini_api_key" {
   secret      = google_secret_manager_secret.gemini_api_key.id
-  secret_data = var.gemini_api_key
+  secret_data = google_apikeys_key.gemini.key_string
 }
 
 # ── ML Admin Token ───────────────────────────────────────────────────────────

@@ -41,6 +41,7 @@ resource "google_project_service" "apis" {
     "servicemanagement.googleapis.com",
     "apikeys.googleapis.com",
     "aiplatform.googleapis.com",
+    "generativelanguage.googleapis.com",
     "cloudscheduler.googleapis.com",
     "monitoring.googleapis.com",
     "secretmanager.googleapis.com",

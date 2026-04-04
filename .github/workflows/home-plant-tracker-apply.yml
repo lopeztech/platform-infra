@@ -50,7 +50,6 @@ jobs:
         run: |
           terraform -chdir=${{ env.TF_DIR }} apply \
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
-            -var="gemini_api_key=${{ secrets.GEMINI_API_KEY }}" \
             -var="ml_admin_token=${{ secrets.ML_ADMIN_TOKEN }}" \
             -var="function_source_object=${{ inputs.function_source_object || secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
             -var="billing_account=${{ secrets.BILLING_ACCOUNT_ID }}" \
