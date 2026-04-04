@@ -90,6 +90,30 @@ resource "google_storage_bucket_iam_member" "upload_api_raw" {
   member = "serviceAccount:${var.upload_sa_email}"
 }
 
+# Validator service account needs to read from raw (Bronze)
+resource "google_storage_bucket_iam_member" "validator_raw" {
+  count  = var.validator_sa_email != "" ? 1 : 0
+  bucket = google_storage_bucket.medallion["raw"].name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${var.validator_sa_email}"
+}
+
+# Validator service account needs to write to staging (Silver)
+resource "google_storage_bucket_iam_member" "validator_staging" {
+  count  = var.validator_sa_email != "" ? 1 : 0
+  bucket = google_storage_bucket.medallion["staging"].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.validator_sa_email}"
+}
+
+# Validator service account needs to write to rejected
+resource "google_storage_bucket_iam_member" "validator_rejected" {
+  count  = var.validator_sa_email != "" ? 1 : 0
+  bucket = google_storage_bucket.medallion["rejected"].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.validator_sa_email}"
+}
+
 # Notify Pub/Sub when a new object lands in the Bronze (raw) bucket
 resource "google_storage_notification" "bronze_finalize" {
   bucket         = google_storage_bucket.medallion["raw"].name

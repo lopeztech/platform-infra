@@ -26,3 +26,9 @@ variable "upload_sa_email" {
   type        = string
   default     = ""
 }
+
+variable "validator_sa_email" {
+  description = "Service account email for the validator function (reads raw, writes staging + rejected)"
+  type        = string
+  default     = ""
+}
