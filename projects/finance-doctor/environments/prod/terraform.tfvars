@@ -1,0 +1,9 @@
+project_id               = "finance-doctor-lcd"
+region                   = "australia-southeast1"
+domain                   = "finance.lopezcloud.dev"
+environment              = "prod"
+github_org               = "lopeztech"
+github_repo              = "platform-infra"
+terraform_operator_email = "admin@lopezcloud.dev"
+notification_email       = "admin@lopezcloud.dev"
+monthly_budget_usd       = 20
