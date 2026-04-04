@@ -20,3 +20,14 @@ variable "notification_email" {
   type        = string
   default     = "admin@lopezcloud.dev"
 }
+
+variable "billing_account" {
+  description = "GCP billing account ID (format: XXXXXX-XXXXXX-XXXXXX)"
+  type        = string
+}
+
+variable "monthly_budget_usd" {
+  description = "Monthly budget amount in USD"
+  type        = number
+  default     = 50
+}
