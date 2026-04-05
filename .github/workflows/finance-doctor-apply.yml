@@ -16,7 +16,6 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    environment: production
     env:
       TF_DIR: projects/finance-doctor
       TF_ENV: prod
