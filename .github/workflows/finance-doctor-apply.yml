@@ -39,6 +39,8 @@ jobs:
             -input=false
 
       - name: Terraform Apply
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           terraform -chdir=${{ env.TF_DIR }} apply \
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
@@ -88,6 +90,22 @@ jobs:
             check "Secret: $secret" \
               gcloud secrets describe "$secret" --project="$PROJECT_ID" --format="value(name)"
           done
+
+          echo "── Cloud Run ──"
+          check "Cloud Run service: finance-doctor" \
+            gcloud run services describe finance-doctor --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
+
+          echo "── Artifact Registry ──"
+          check "AR repo: finance-doctor-images" \
+            gcloud artifacts repositories describe finance-doctor-images --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
+
+          echo "── Service Accounts ──"
+          check "SA: finance-doctor-runtime" \
+            gcloud iam service-accounts describe "finance-doctor-runtime@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
+
+          echo "── DNS ──"
+          check "CNAME finance.lopezcloud.dev resolves" \
+            nslookup finance.lopezcloud.dev
 
           echo ""
           echo "════════════════════════════════════════"
