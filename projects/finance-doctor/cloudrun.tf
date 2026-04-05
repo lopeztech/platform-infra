@@ -107,35 +107,13 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [google_project_service.apis]
 }
 
-# Allow unauthenticated access — NextAuth handles app-level auth
-resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.app.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
-
-# ── Cloud Run Domain Mapping ──────────────────────────────────────────────────
-# Maps finance.lopezcloud.dev to Cloud Run with free Google-managed SSL.
-# Requires a CNAME record pointing to ghs.googlehosted.com (see dns.tf).
-
-resource "google_cloud_run_domain_mapping" "app" {
-  name     = var.domain
-  location = var.region
-  project  = var.project_id
-
-  metadata {
-    namespace = var.project_id
-    labels    = local.labels
-  }
-
-  spec {
-    route_name = google_cloud_run_v2_service.app.name
-  }
-
-  depends_on = [google_cloud_run_v2_service.app]
-}
+# Public access is configured via gcloud CLI (--allow-unauthenticated) since
+# the Terraform allUsers binding is blocked by org policy.
+# Run once after first deploy:
+#   gcloud run services set-iam-policy finance-doctor --region=australia-southeast1 \
+#     --project=finance-doctor-lcd policy.yaml
+#
+# Or use: gcloud run deploy finance-doctor --allow-unauthenticated ...
 
 # ── App Runtime Service Account ───────────────────────────────────────────────
 

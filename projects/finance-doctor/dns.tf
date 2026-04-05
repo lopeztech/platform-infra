@@ -6,14 +6,13 @@ data "cloudflare_zone" "lopezcloud" {
   name = "lopezcloud.dev"
 }
 
-# CNAME to ghs.googlehosted.com for Cloud Run domain mapping.
-# Cloudflare proxy is disabled so Google can verify domain ownership
-# and provision the managed SSL certificate.
+# CNAME to the Cloud Run service URL.
+# Cloudflare proxy (orange cloud) handles SSL termination and caching.
 resource "cloudflare_record" "app" {
   zone_id = data.cloudflare_zone.lopezcloud.id
   name    = "finance"
   type    = "CNAME"
-  value   = "ghs.googlehosted.com"
-  proxied = false
-  ttl     = 3600
+  value   = trimprefix(google_cloud_run_v2_service.app.uri, "https://")
+  proxied = true  # Cloudflare handles SSL + CDN for free
+  ttl     = 1     # auto when proxied
 }
