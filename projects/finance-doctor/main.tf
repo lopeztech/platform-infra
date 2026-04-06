@@ -35,6 +35,8 @@ resource "google_project_service" "apis" {
     "monitoring.googleapis.com",
     "billingbudgets.googleapis.com",
     "people.googleapis.com",
+    "firestore.googleapis.com",
+    "aiplatform.googleapis.com",
   ])
 
   project            = var.project_id

@@ -81,6 +81,16 @@ resource "google_cloud_run_v2_service" "app" {
         name  = "AUTH_URL"
         value = "https://finance-doctor-ws5d6symma-ts.a.run.app"
       }
+
+      env {
+        name  = "GOOGLE_CLOUD_PROJECT"
+        value = var.project_id
+      }
+
+      env {
+        name  = "GEMINI_MODEL"
+        value = "gemini-2.0-flash"
+      }
     }
 
     scaling {
@@ -129,5 +139,17 @@ resource "google_service_account" "app_runtime" {
 resource "google_project_iam_member" "app_runtime_secret_accessor" {
   project = var.project_id
   role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.app_runtime.email}"
+}
+
+resource "google_project_iam_member" "app_runtime_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.app_runtime.email}"
+}
+
+resource "google_project_iam_member" "app_runtime_vertex_ai" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
   member  = "serviceAccount:${google_service_account.app_runtime.email}"
 }
