@@ -55,7 +55,6 @@ resource "google_billing_budget" "project" {
     monitoring_notification_channels = [
       google_monitoring_notification_channel.budget_email.id,
     ]
-    pubsub_topic                   = var.pubsub_topic_id
     disable_default_iam_recipients = false
   }
 }
