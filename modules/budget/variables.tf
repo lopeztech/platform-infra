@@ -30,8 +30,8 @@ variable "threshold_percentages" {
   default     = [0.5, 0.8, 1.0]
 }
 
-variable "pubsub_topic_id" {
-  description = "Optional Pub/Sub topic for budget notifications (automated responses)"
+variable "currency_code" {
+  description = "Currency code matching the billing account (e.g. AUD, USD)"
   type        = string
-  default     = null
+  default     = "AUD"
 }
