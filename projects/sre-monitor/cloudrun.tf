@@ -41,6 +41,20 @@ resource "google_cloud_run_v2_service" "app" {
         }
       }
 
+      # GCP billing export configuration for cost monitoring
+      env {
+        name  = "GCP_BILLING_PROJECT_ID"
+        value = var.project_id
+      }
+      env {
+        name  = "GCP_BILLING_DATASET"
+        value = "billing_export"
+      }
+      env {
+        name  = "GCP_BILLING_TABLE"
+        value = var.gcp_billing_table
+      }
+
       startup_probe {
         http_get { path = "/health" }
         initial_delay_seconds = 0

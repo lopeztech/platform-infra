@@ -8,3 +8,4 @@ app_github_repo          = "sre-monitor"
 terraform_operator_email = "admin@lopezcloud.dev"
 notification_email       = "admin@lopezcloud.dev"
 monthly_budget_usd       = 20
+gcp_billing_table        = "gcp_billing_export_v1_01163bfa44210c1cfe"

@@ -61,6 +61,11 @@ variable "cdn_max_ttl" {
   default     = 86400
 }
 
+variable "gcp_billing_table" {
+  description = "BigQuery table name for billing export (format: gcp_billing_export_v1_XXXXXX)"
+  type        = string
+}
+
 variable "billing_account" {
   description = "GCP billing account ID (format: XXXXXX-XXXXXX-XXXXXX)"
   type        = string

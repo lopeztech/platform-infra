@@ -62,6 +62,13 @@ resource "google_project_iam_member" "deployer" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
+# BigQuery job execution for the Cloud Run default SA (cost queries)
+resource "google_project_iam_member" "cloudrun_bigquery_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
 resource "google_service_account_iam_member" "deployer_act_as_run_sa" {
   service_account_id = "projects/${var.project_id}/serviceAccounts/${data.google_compute_default_service_account.default.email}"
   role               = "roles/iam.serviceAccountUser"
