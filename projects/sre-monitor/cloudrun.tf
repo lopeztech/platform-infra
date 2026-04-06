@@ -41,6 +41,35 @@ resource "google_cloud_run_v2_service" "app" {
         }
       }
 
+      # Auth secrets from Secret Manager
+      env {
+        name = "JWT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.jwt_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "GITHUB_OAUTH_CLIENT_ID"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.github_oauth_client_id.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "GITHUB_OAUTH_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.github_oauth_client_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       # GCP billing export configuration for cost monitoring
       env {
         name  = "GCP_BILLING_PROJECT_ID"
