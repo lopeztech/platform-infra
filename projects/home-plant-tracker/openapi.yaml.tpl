@@ -373,6 +373,47 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/{plantId}/diagnostic:
+    post:
+      operationId: diagnosticPlant
+      summary: Upload a diagnostic photo and analyse plant health issue
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              imageBase64:
+                type: string
+              mimeType:
+                type: string
+      responses:
+        "200":
+          description: Diagnostic result with photo URL and analysis
+    options:
+      operationId: corsDiagnosticPlant
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
   /recommend:
     post:
       operationId: recommendCare
