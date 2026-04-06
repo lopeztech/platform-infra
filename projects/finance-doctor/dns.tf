@@ -13,6 +13,6 @@ resource "cloudflare_record" "app" {
   name    = "finance"
   type    = "CNAME"
   value   = trimprefix(google_cloud_run_v2_service.app.uri, "https://")
-  proxied = true  # Cloudflare handles SSL + CDN for free
-  ttl     = 1     # auto when proxied
+  proxied = false
+  ttl     = 3600
 }
