@@ -79,7 +79,7 @@ resource "google_cloud_run_v2_service" "app" {
 
       env {
         name  = "AUTH_URL"
-        value = "https://${var.domain}"
+        value = "https://finance-doctor-ws5d6symma-ts.a.run.app"
       }
     }
 

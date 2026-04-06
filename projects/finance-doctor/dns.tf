@@ -2,17 +2,10 @@
 # credentials are stored in state or config.
 provider "cloudflare" {}
 
-data "cloudflare_zone" "lopezcloud" {
-  name = "lopezcloud.dev"
-}
-
-# CNAME to the Cloud Run service URL.
-# Cloudflare proxy (orange cloud) handles SSL termination and caching.
-resource "cloudflare_record" "app" {
-  zone_id = data.cloudflare_zone.lopezcloud.id
-  name    = "finance"
-  type    = "CNAME"
-  value   = trimprefix(google_cloud_run_v2_service.app.uri, "https://")
-  proxied = false
-  ttl     = 3600
-}
+# Custom domain DNS is not used — Cloud Run domain mapping is unsupported in
+# australia-southeast1. The app is served directly via the Cloud Run URL:
+#   https://finance-doctor-ws5d6symma-ts.a.run.app
+#
+# To add a custom domain later, either:
+#   1. Move Cloud Run to a region that supports domain mapping (e.g. us-central1)
+#   2. Add a GCP load balancer with a managed SSL certificate
