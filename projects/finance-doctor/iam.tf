@@ -43,6 +43,8 @@ locals {
     "roles/logging.admin",
     "roles/monitoring.admin",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/datastore.owner",
+    "roles/appengine.appAdmin",
   ]
 }
 

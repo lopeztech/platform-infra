@@ -103,9 +103,9 @@ jobs:
           check "SA: finance-doctor-runtime" \
             gcloud iam service-accounts describe "finance-doctor-runtime@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
 
-          echo "── DNS ──"
-          check "CNAME finance.lopezcloud.dev resolves" \
-            nslookup finance.lopezcloud.dev
+          echo "── Firestore ──"
+          check "Firestore database exists" \
+            gcloud firestore databases describe --project="$PROJECT_ID" --format="value(name)"
 
           echo ""
           echo "════════════════════════════════════════"
