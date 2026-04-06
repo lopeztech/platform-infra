@@ -7,6 +7,7 @@ github_repo              = "platform-infra"
 terraform_operator_email = "admin@lopezcloud.dev"
 iap_allowed_users        = ["admin@lopezcloud.dev"]
 notification_email       = "admin@lopezcloud.dev"
+monthly_budget_usd       = 20
 
 # function_source_object is set by CI when deploying a new function version.
 # For infrastructure-only changes, set this to the currently deployed object name.

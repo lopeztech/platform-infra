@@ -55,6 +55,7 @@ terraform apply -var-file="environments/<env>/terraform.tfvars"
 | Secret | Used by |
 |--------|---------|
 | `TF_STATE_BUCKET` | All projects |
+| `BILLING_ACCOUNT_ID` | All projects (budget alerts) |
 | `HOME_PLANT_TRACKER_WIF_PROVIDER` | home-plant-tracker |
 | `HOME_PLANT_TRACKER_SA_EMAIL` | home-plant-tracker |
 | `HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT` | home-plant-tracker |
