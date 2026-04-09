@@ -16,12 +16,20 @@ jobs:
     env:
       TF_DIR: projects/sre-monitor
       TF_ENV: prod
+      TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
     steps:
       - uses: actions/checkout@v6
 
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "~1.6"
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: terraform-providers-${{ hashFiles('projects/sre-monitor/.terraform.lock.hcl') }}
+          restore-keys: terraform-providers-
 
       - uses: google-github-actions/auth@v3
         with:

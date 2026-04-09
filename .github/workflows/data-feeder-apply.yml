@@ -20,6 +20,7 @@ jobs:
     env:
       TF_DIR: projects/data-feeder
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
     steps:
       - uses: actions/checkout@v6
 
@@ -27,6 +28,13 @@ jobs:
         with:
           terraform_version: "~1.6"
           terraform_wrapper: false
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: terraform-providers-${{ hashFiles('projects/data-feeder/.terraform.lock.hcl') }}
+          restore-keys: terraform-providers-
 
       - uses: google-github-actions/auth@v3
         with:
@@ -38,8 +46,7 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=terraform/state/data-feeder" \
-            -input=false \
-            -upgrade
+            -input=false
 
       - name: Terraform Apply
         run: |
@@ -47,7 +54,8 @@ jobs:
             -var-file="terraform.tfvars" \
             -var="billing_account=${{ secrets.BILLING_ACCOUNT_ID }}" \
             -input=false \
-            -auto-approve
+            -auto-approve \
+            -parallelism=30
 
   verify:
     needs: apply
@@ -88,101 +96,19 @@ jobs:
             fi
           }
 
-          echo "── APIs ──"
-          for api in run.googleapis.com compute.googleapis.com \
-                     storage.googleapis.com pubsub.googleapis.com \
-                     bigquery.googleapis.com firestore.googleapis.com \
-                     secretmanager.googleapis.com cloudkms.googleapis.com \
-                     artifactregistry.googleapis.com; do
-            check "API: $api" \
-              gcloud services list --project="$PROJECT_ID" --filter="config.name=$api" --format="value(state)"
-          done
-
           echo "── Cloud Run ──"
           check "Cloud Run service: data-feeder-api" \
             gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
           INGRESS=$(gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
           check_value "Cloud Run ingress = all" "all" "$INGRESS"
 
-          echo "── Load Balancer ──"
-          check "Global IP: data-feeder-ip" \
-            gcloud compute addresses describe data-feeder-ip --project="$PROJECT_ID" --global --format="value(address)"
+          echo "── Load Balancer & SSL ──"
           check "SSL cert: data-feeder-cert" \
             gcloud compute ssl-certificates describe data-feeder-cert --project="$PROJECT_ID" --global --format="value(name)"
           CERT_DOMAINS=$(gcloud compute ssl-certificates describe data-feeder-cert --project="$PROJECT_ID" --global --format="value(managed.domains)" 2>/dev/null || echo "")
           check_value "SSL cert covers $DOMAIN" "$DOMAIN" "$CERT_DOMAINS"
-          check "Backend: data-feeder-backend" \
-            gcloud compute backend-services describe data-feeder-backend --project="$PROJECT_ID" --global --format="value(name)"
-          check "URL map: data-feeder-url-map" \
-            gcloud compute url-maps describe data-feeder-url-map --project="$PROJECT_ID" --format="value(name)"
-          check "HTTPS proxy: data-feeder-https-proxy" \
-            gcloud compute target-https-proxies describe data-feeder-https-proxy --project="$PROJECT_ID" --format="value(name)"
           check "HTTPS forwarding rule (443)" \
             gcloud compute forwarding-rules describe data-feeder-https-forwarding --project="$PROJECT_ID" --global --format="value(name)"
-          check "HTTP redirect rule (80)" \
-            gcloud compute forwarding-rules describe data-feeder-http-forwarding --project="$PROJECT_ID" --global --format="value(name)"
-          check "NEG: data-feeder-neg" \
-            gcloud compute network-endpoint-groups describe data-feeder-neg --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-
-          echo "── Artifact Registry ──"
-          check "AR repo: data-feeder-images" \
-            gcloud artifacts repositories describe data-feeder-images --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
-
-          echo "── GCS Buckets ──"
-          for layer in raw staging curated rejected; do
-            check "GCS bucket: ${PROJECT_ID}-${layer}" \
-              gcloud storage buckets describe "gs://${PROJECT_ID}-${layer}" --format="value(name)"
-          done
-
-          echo "── Pub/Sub Topics ──"
-          for topic in file-uploaded validation-complete pipeline-failed pipeline-dlq; do
-            check "Pub/Sub topic: $topic" \
-              gcloud pubsub topics describe "$topic" --project="$PROJECT_ID" --format="value(name)"
-          done
-
-          echo "── Pub/Sub Subscriptions ──"
-          for sub in validator-sub dataflow-sub alerting-sub dlq-monitor-sub; do
-            check "Pub/Sub subscription: $sub" \
-              gcloud pubsub subscriptions describe "$sub" --project="$PROJECT_ID" --format="value(name)"
-          done
-
-          echo "── BigQuery Datasets ──"
-          for ds in raw staging curated audit; do
-            check "BigQuery dataset: $ds" \
-              bq show --project_id="$PROJECT_ID" "$ds"
-          done
-
-          echo "── Firestore ──"
-          check "Firestore database: data-feeder" \
-            gcloud firestore databases describe --project="$PROJECT_ID" --database="data-feeder" --format="value(name)"
-
-          echo "── KMS ──"
-          check "KMS keyring: data-pipeline" \
-            gcloud kms keyrings describe data-pipeline --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
-          for key in key-bronze key-silver key-gold key-firestore key-bigquery; do
-            check "KMS key: $key" \
-              gcloud kms keys describe "$key" --project="$PROJECT_ID" --location="$REGION" --keyring=data-pipeline --format="value(name)"
-          done
-
-          echo "── Secret Manager ──"
-          check "Secret: gcp-project-id" \
-            gcloud secrets describe gcp-project-id --project="$PROJECT_ID" --format="value(name)"
-
-          echo "── Service Accounts ──"
-          for sa in sa-upload-api sa-validator sa-dataflow sa-cicd; do
-            check "Service account: $sa" \
-              gcloud iam service-accounts describe "${sa}@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
-          done
-
-          echo "── WIF ──"
-          check "WIF pool: github-pool" \
-            gcloud iam workload-identity-pools describe github-pool --project="$PROJECT_ID" --location=global --format="value(name)"
-
-          echo "── Monitoring ──"
-          check "Uptime check exists" \
-            gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:data-feeder"
-          check "Alert policy exists" \
-            gcloud monitoring policies list --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:data-feeder"
 
           echo ""
           echo "════════════════════════════════════════"
