@@ -6,10 +6,16 @@ data "cloudflare_zone" "lopezcloud" {
   name = "lopezcloud.dev"
 }
 
-# The plants.lopezcloud.dev A/AAAA records are managed by
-# google_firebase_hosting_custom_domain — Cloudflare DNS records for the
-# frontend are no longer needed here. Firebase provides its own CDN and SSL,
-# so the Cloudflare record must be DNS-only (grey cloud) when set manually.
+# Firebase Hosting custom domain — DNS-only (grey cloud) so Firebase
+# provides its own CDN and SSL.
+resource "cloudflare_record" "app" {
+  zone_id = data.cloudflare_zone.lopezcloud.id
+  name    = "plants"
+  type    = "CNAME"
+  content = "${google_firebase_hosting_site.plant_tracker.site_id}.web.app"
+  proxied = false  # DNS-only — Firebase handles CDN and TLS
+  ttl     = 3600
+}
 
 resource "cloudflare_record" "api" {
   zone_id = data.cloudflare_zone.lopezcloud.id
