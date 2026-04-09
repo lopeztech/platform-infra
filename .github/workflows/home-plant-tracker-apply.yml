@@ -103,7 +103,8 @@ jobs:
 
           echo "── Firebase Hosting ──"
           check "Firebase Hosting site: plant-tracker-${ENV}" \
-            gcloud firebase hosting sites describe "plant-tracker-${ENV}" --project="$PROJECT_ID"
+            curl -sf -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+              "https://firebasehosting.googleapis.com/v1beta1/projects/${PROJECT_ID}/sites/plant-tracker-${ENV}"
 
           echo "── API Gateway ──"
           check "API Gateway: plant-tracker-gateway-${ENV}" \
