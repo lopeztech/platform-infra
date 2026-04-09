@@ -11,7 +11,7 @@ resource "google_cloud_run_v2_service" "api" {
     service_account = var.service_account_email
 
     scaling {
-      min_instance_count = 1  # avoid cold starts
+      min_instance_count = 0  # scale to zero when idle
       max_instance_count = 10
     }
 

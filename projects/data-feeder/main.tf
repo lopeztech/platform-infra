@@ -239,6 +239,11 @@ resource "google_storage_bucket" "ml_artifacts" {
     managed = "terraform"
   }
 
+  lifecycle_rule {
+    condition { age = 90 }
+    action { type = "Delete" }
+  }
+
   depends_on = [google_project_service.apis]
 }
 
