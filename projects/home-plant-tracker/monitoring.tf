@@ -8,7 +8,7 @@ module "monitoring" {
   services = {
     "plant-tracker" = {
       domain       = var.domain
-      path         = "/health"
+      path         = "/"
       display_name = "Plant Tracker"
     }
   }

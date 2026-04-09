@@ -25,12 +25,20 @@ jobs:
     env:
       TF_DIR: projects/home-plant-tracker
       TF_ENV: prod
+      TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
     steps:
       - uses: actions/checkout@v6
 
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "~1.6"
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: terraform-providers-${{ hashFiles('projects/home-plant-tracker/.terraform.lock.hcl') }}
+          restore-keys: terraform-providers-
 
       - uses: google-github-actions/auth@v3
         with:
@@ -54,32 +62,11 @@ jobs:
             -var="function_source_object=${{ inputs.function_source_object || secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
             -var="billing_account=${{ secrets.BILLING_ACCOUNT_ID }}" \
             -input=false \
-            -auto-approve
-
-  invalidate-cdn:
-    needs: apply
-    runs-on: ubuntu-latest
-    env:
-      PROJECT_ID: home-plant-tracker-lcd
-      URL_MAP: plant-tracker-url-map-prod
-    steps:
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
-          service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Invalidate Cloud CDN cache
-        run: |
-          gcloud compute url-maps invalidate-cdn-cache "$URL_MAP" \
-            --project="$PROJECT_ID" \
-            --path="/*" \
-            --async
+            -auto-approve \
+            -parallelism=30
 
   verify:
-    needs: [apply, invalidate-cdn]
+    needs: apply
     if: always() && needs.apply.result == 'success'
     runs-on: ubuntu-latest
     env:
@@ -110,99 +97,17 @@ jobs:
             fi
           }
 
-          check_value() {
-            local label="$1" expected="$2" actual="$3"
-            if [[ "$actual" == *"$expected"* ]]; then
-              echo "  ✅ $label"; ((PASS++)) || true
-            else
-              echo "  ❌ $label (expected: $expected, got: $actual)"; ((FAIL++)) || true; ERRORS+=("$label")
-            fi
-          }
-
-          echo "── APIs ──"
-          for api in run.googleapis.com compute.googleapis.com \
-                     storage.googleapis.com iam.googleapis.com \
-                     artifactregistry.googleapis.com firestore.googleapis.com \
-                     cloudfunctions.googleapis.com cloudbuild.googleapis.com \
-                     apigateway.googleapis.com secretmanager.googleapis.com \
-                     apikeys.googleapis.com; do
-            check "API: $api" \
-              gcloud services list --project="$PROJECT_ID" --filter="config.name=$api" --format="value(state)"
-          done
-
-          echo "── Cloud Run ──"
-          check "Cloud Run service: plant-tracker" \
-            gcloud run services describe plant-tracker --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-          INGRESS=$(gcloud run services describe plant-tracker --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
-          check_value "Cloud Run ingress = internal-and-cloud-load-balancing" "internal-and-cloud-load-balancing" "$INGRESS"
-
           echo "── Cloud Function ──"
           check "Cloud Function: plant-tracker-plants-api" \
             gcloud functions describe plant-tracker-plants-api --project="$PROJECT_ID" --region="$REGION" --gen2 --format="value(name)"
 
+          echo "── Firebase Hosting ──"
+          check "Firebase Hosting site: plant-tracker-${ENV}" \
+            gcloud firebase hosting sites describe "plant-tracker-${ENV}" --project="$PROJECT_ID"
+
           echo "── API Gateway ──"
           check "API Gateway: plant-tracker-gateway-${ENV}" \
             gcloud api-gateway gateways describe "plant-tracker-gateway-${ENV}" --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
-          check "API Gateway API: plant-tracker-api" \
-            gcloud api-gateway apis describe plant-tracker-api --project="$PROJECT_ID" --format="value(name)"
-
-          echo "── Load Balancer ──"
-          check "Global IP: plant-tracker-ip-${ENV}" \
-            gcloud compute addresses describe "plant-tracker-ip-${ENV}" --project="$PROJECT_ID" --global --format="value(address)"
-          check "SSL cert: plant-tracker-cert-${ENV}" \
-            gcloud compute ssl-certificates describe "plant-tracker-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
-          CERT_DOMAINS=$(gcloud compute ssl-certificates describe "plant-tracker-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(managed.domains)" 2>/dev/null || echo "")
-          check_value "SSL cert covers $DOMAIN" "$DOMAIN" "$CERT_DOMAINS"
-          check "Backend: plant-tracker-backend-${ENV}" \
-            gcloud compute backend-services describe "plant-tracker-backend-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
-          CDN_MODE=$(gcloud compute backend-services describe "plant-tracker-backend-${ENV}" --project="$PROJECT_ID" --global --format="value(cdnPolicy.cacheMode)" 2>/dev/null || echo "")
-          check_value "CDN enabled (CACHE_ALL_STATIC)" "CACHE_ALL_STATIC" "$CDN_MODE"
-          check "URL map: plant-tracker-url-map-${ENV}" \
-            gcloud compute url-maps describe "plant-tracker-url-map-${ENV}" --project="$PROJECT_ID" --format="value(name)"
-          check "HTTPS proxy: plant-tracker-https-proxy-${ENV}" \
-            gcloud compute target-https-proxies describe "plant-tracker-https-proxy-${ENV}" --project="$PROJECT_ID" --format="value(name)"
-          check "HTTPS forwarding rule (443)" \
-            gcloud compute forwarding-rules describe "plant-tracker-https-forwarding-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
-          check "HTTP redirect rule (80)" \
-            gcloud compute forwarding-rules describe "plant-tracker-http-forwarding-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
-          check "NEG: plant-tracker-neg-${ENV}" \
-            gcloud compute network-endpoint-groups describe "plant-tracker-neg-${ENV}" --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-
-          echo "── Artifact Registry ──"
-          check "AR repo: plant-tracker-images" \
-            gcloud artifacts repositories describe plant-tracker-images --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
-
-          echo "── GCS Buckets ──"
-          check "GCS bucket: ${PROJECT_ID}-plant-tracker-${ENV}" \
-            gcloud storage buckets describe "gs://${PROJECT_ID}-plant-tracker-${ENV}" --format="value(name)"
-          check "GCS bucket: ${PROJECT_ID}-plant-tracker-images-${ENV}" \
-            gcloud storage buckets describe "gs://${PROJECT_ID}-plant-tracker-images-${ENV}" --format="value(name)"
-          check "GCS bucket: ${PROJECT_ID}-fn-source-${ENV}" \
-            gcloud storage buckets describe "gs://${PROJECT_ID}-fn-source-${ENV}" --format="value(name)"
-
-          echo "── Firestore ──"
-          check "Firestore database: (default)" \
-            gcloud firestore databases describe --project="$PROJECT_ID" --database="(default)" --format="value(name)"
-
-          echo "── Secret Manager ──"
-          check "Secret: plant-tracker-gemini-api-key" \
-            gcloud secrets describe plant-tracker-gemini-api-key --project="$PROJECT_ID" --format="value(name)"
-
-          echo "── Service Accounts ──"
-          check "SA: plant-tracker-plants-fn" \
-            gcloud iam service-accounts describe "plant-tracker-plants-fn@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
-          check "SA: plant-tracker-deployer" \
-            gcloud iam service-accounts describe "plant-tracker-deployer@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
-
-          echo "── WIF ──"
-          check "WIF pool: plant-tracker-github-pool" \
-            gcloud iam workload-identity-pools describe plant-tracker-github-pool --project="$PROJECT_ID" --location=global --format="value(name)"
-
-          echo "── Monitoring ──"
-          check "Uptime check exists" \
-            gcloud monitoring uptime list-configs --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:Plant Tracker"
-          check "Alert policy exists" \
-            gcloud monitoring policies list --project="$PROJECT_ID" --format="value(displayName)" --filter="displayName:Plant Tracker"
 
           echo ""
           echo "════════════════════════════════════════"

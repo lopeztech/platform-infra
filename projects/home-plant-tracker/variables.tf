@@ -37,19 +37,6 @@ variable "terraform_operator_email" {
   type        = string
 }
 
-variable "cdn_default_ttl" {
-  description = "Default CDN cache TTL in seconds for non-versioned assets"
-  type        = number
-  default     = 3600 # 1 hour
-}
-
-variable "cdn_max_ttl" {
-  description = "Maximum CDN cache TTL in seconds"
-  type        = number
-  default     = 86400 # 24 hours
-}
-
-
 variable "iap_allowed_users" {
   description = "List of Google account emails permitted to access the app via IAP"
   type        = list(string)
