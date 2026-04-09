@@ -8,8 +8,6 @@ resource "google_firebase_hosting_site" "plant_tracker" {
   project  = var.project_id
   site_id  = "${local.app_name}-${var.environment}"
 
-  labels = local.labels
-
   depends_on = [google_project_service.apis]
 }
 
