@@ -89,7 +89,7 @@ resource "google_cloud_run_v2_service" "app" {
 
       env {
         name  = "GEMINI_MODEL"
-        value = "gemini-2.0-flash"
+        value = "gemini-2.5-flash"
       }
     }
 

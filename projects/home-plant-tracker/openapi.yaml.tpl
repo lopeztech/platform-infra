@@ -446,6 +446,38 @@ paths:
         "204":
           description: CORS preflight
 
+  /recommend-watering:
+    post:
+      operationId: recommendWatering
+      summary: Get AI-powered watering advice for a specific plant
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              species:
+                type: string
+      responses:
+        "200":
+          description: Watering recommendations
+    options:
+      operationId: corsRecommendWatering
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
   /config/floorplan:
     get:
       operationId: getFloorplan
