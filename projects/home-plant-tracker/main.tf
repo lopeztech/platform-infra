@@ -46,6 +46,7 @@ resource "google_project_service" "apis" {
     "monitoring.googleapis.com",
     "secretmanager.googleapis.com",
     "billingbudgets.googleapis.com",
+    "firebase.googleapis.com",
     "firebasehosting.googleapis.com",
   ])
 

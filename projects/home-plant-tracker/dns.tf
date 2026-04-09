@@ -15,7 +15,7 @@ resource "cloudflare_record" "api" {
   zone_id = data.cloudflare_zone.lopezcloud.id
   name    = "api.plants"
   type    = "CNAME"
-  value   = google_api_gateway_gateway.app.default_hostname
+  content = google_api_gateway_gateway.app.default_hostname
   proxied = true  # Cloudflare terminates TLS for api.plants.lopezcloud.dev
   ttl     = 1     # Auto — required when proxied
 }
