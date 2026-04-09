@@ -59,6 +59,7 @@ jobs:
 
   verify:
     needs: apply
+    if: always() && needs.apply.result == 'success'
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: data-feeder-lcd
@@ -87,28 +88,10 @@ jobs:
             fi
           }
 
-          check_value() {
-            local label="$1" expected="$2" actual="$3"
-            if [[ "$actual" == *"$expected"* ]]; then
-              echo "  ✅ $label"; ((PASS++)) || true
-            else
-              echo "  ❌ $label (expected: $expected, got: $actual)"; ((FAIL++)) || true; ERRORS+=("$label")
-            fi
-          }
-
-          echo "── Cloud Run ──"
-          check "Cloud Run service: data-feeder-api" \
-            gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-          INGRESS=$(gcloud run services describe data-feeder-api --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
-          check_value "Cloud Run ingress = all" "all" "$INGRESS"
-
-          echo "── Load Balancer & SSL ──"
-          check "SSL cert: data-feeder-cert" \
-            gcloud compute ssl-certificates describe data-feeder-cert --project="$PROJECT_ID" --global --format="value(name)"
-          CERT_DOMAINS=$(gcloud compute ssl-certificates describe data-feeder-cert --project="$PROJECT_ID" --global --format="value(managed.domains)" 2>/dev/null || echo "")
-          check_value "SSL cert covers $DOMAIN" "$DOMAIN" "$CERT_DOMAINS"
-          check "HTTPS forwarding rule (443)" \
-            gcloud compute forwarding-rules describe data-feeder-https-forwarding --project="$PROJECT_ID" --global --format="value(name)"
+          echo "── Firebase Hosting ──"
+          check "Firebase Hosting site: ${PROJECT_ID}" \
+            curl -sf -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+              "https://firebasehosting.googleapis.com/v1beta1/projects/${PROJECT_ID}/sites/${PROJECT_ID}"
 
           echo ""
           echo "════════════════════════════════════════"

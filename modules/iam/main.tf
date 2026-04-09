@@ -244,6 +244,18 @@ resource "google_project_iam_member" "cicd_sa_user" {
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
+resource "google_project_iam_member" "cicd_firebase_admin" {
+  project = var.project_id
+  role    = "roles/firebase.admin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
+resource "google_project_iam_member" "cicd_firebase_hosting" {
+  project = var.project_id
+  role    = "roles/firebasehosting.admin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
 # ── Workload Identity Federation for GitHub Actions ───────────────────────────
 resource "google_iam_workload_identity_pool" "github" {
   workload_identity_pool_id = "github-pool${local.sfx}"

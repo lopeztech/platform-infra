@@ -59,6 +59,8 @@ resource "google_project_service" "apis" {
     "compute.googleapis.com",
     "certificatemanager.googleapis.com",
     "billingbudgets.googleapis.com",
+    "firebase.googleapis.com",
+    "firebasehosting.googleapis.com",
   ])
 
   service            = each.value
@@ -150,52 +152,6 @@ module "secrets" {
   sa_dataflow_email   = module.iam.sa_emails["dataflow"]
 }
 
-# ── Cloud Run ────────────────────────────────────────────────────────────────
-module "cloudrun" {
-  source = "../../modules/cloudrun"
-
-  project_id            = var.project_id
-  region                = var.region
-  service_account_email = module.iam.sa_emails["upload-api"]
-  secret_ids            = module.secrets.secret_ids
-  gcs_bucket_names      = module.gcs.bucket_names
-  pubsub_topic_ids      = module.pubsub.topic_ids
-  firestore_database    = module.firestore.database_name
-}
-
-# ── Cloud Build — default compute SA permissions ────────────────────────────
-# Cloud Build (used by Cloud Run source deploys) needs project-level storage
-# read access to fetch source from internal gcf-v2-sources / cloud-run-source buckets.
-
-data "google_compute_default_service_account" "default" {
-  project = var.project_id
-}
-
-resource "google_project_iam_member" "cloudbuild_storage_viewer" {
-  project = var.project_id
-  role    = "roles/storage.objectViewer"
-  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
-}
-
-# Allow Eventarc/Pub/Sub to invoke the validator Cloud Run service.
-# The Eventarc trigger uses sa-validator as the invoking service account.
-resource "google_cloud_run_v2_service_iam_member" "validator_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = "validator"
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${module.iam.sa_emails["validator"]}"
-}
-
-# Allow Eventarc/Pub/Sub to invoke the loader Cloud Run service.
-resource "google_cloud_run_v2_service_iam_member" "loader_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = "loader"
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${module.iam.sa_emails["dataflow"]}"
-}
-
 # ── Monitoring ──────────────────────────────────────────────────────────────
 module "monitoring" {
   source = "../../modules/monitoring"
@@ -204,10 +160,10 @@ module "monitoring" {
   notification_email = var.notification_email
 
   services = {
-    "data-feeder-api" = {
+    "data-feeder" = {
       domain       = var.domain
-      path         = "/health"
-      display_name = "Data Feeder API"
+      path         = "/"
+      display_name = "Data Feeder"
     }
   }
 
@@ -247,13 +203,3 @@ resource "google_storage_bucket" "ml_artifacts" {
   depends_on = [google_project_service.apis]
 }
 
-# ── Artifact Registry ────────────────────────────────────────────────────────
-resource "google_artifact_registry_repository" "app" {
-  location      = var.region
-  repository_id = "data-feeder-images"
-  description   = "Docker images for Data Feeder"
-  format        = "DOCKER"
-  project       = var.project_id
-
-  depends_on = [google_project_service.apis]
-}
