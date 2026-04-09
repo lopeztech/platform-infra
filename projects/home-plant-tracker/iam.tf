@@ -63,6 +63,7 @@ locals {
     "roles/apigateway.admin",
     "roles/serviceusage.apiKeysAdmin",
     "roles/cloudscheduler.admin",
+    "roles/firebase.admin",
     "roles/firebasehosting.admin",
   ]
 }
