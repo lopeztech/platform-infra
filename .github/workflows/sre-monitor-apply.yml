@@ -46,6 +46,15 @@ jobs:
             -backend-config="prefix=terraform/state/sre-monitor/${{ env.TF_ENV }}" \
             -input=false
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Empty old SPA bucket (if exists)
+        run: |
+          if gsutil ls gs://sre-monitor-lcd-sre-monitor-prod &>/dev/null; then
+            gsutil -m rm -r gs://sre-monitor-lcd-sre-monitor-prod/** || true
+          fi
+
       - name: Terraform Apply
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
