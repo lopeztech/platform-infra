@@ -250,6 +250,12 @@ resource "google_project_iam_member" "cicd_firebase_admin" {
   member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
 }
 
+resource "google_project_iam_member" "cicd_serviceusage_admin" {
+  project = var.project_id
+  role    = "roles/serviceusage.serviceUsageAdmin"
+  member  = "serviceAccount:${google_service_account.pipeline["cicd"].email}"
+}
+
 resource "google_project_iam_member" "cicd_firebase_hosting" {
   project = var.project_id
   role    = "roles/firebasehosting.admin"
