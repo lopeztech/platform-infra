@@ -46,8 +46,16 @@ jobs:
 
       - name: Ensure Firebase project exists
         run: |
-          if ! gcloud firebase projects:describe data-feeder-lcd &>/dev/null; then
-            gcloud firebase projects:addfirebase data-feeder-lcd || true
+          # Use the Firebase Management REST API directly
+          TOKEN=$(gcloud auth print-access-token)
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://firebase.googleapis.com/v1beta1/projects/data-feeder-lcd")
+          if [ "$STATUS" != "200" ]; then
+            curl -sf -X POST \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://firebase.googleapis.com/v1beta1/projects/data-feeder-lcd:addFirebase" || true
           fi
 
       - name: Terraform Init

@@ -53,6 +53,7 @@ locals {
     "roles/resourcemanager.projectIamAdmin",
     "roles/firebase.admin",
     "roles/firebasehosting.admin",
+    "roles/bigquery.admin",
   ]
 }
 
