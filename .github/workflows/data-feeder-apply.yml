@@ -41,6 +41,15 @@ jobs:
           workload_identity_provider: ${{ secrets.DATA_FEEDER_WIF_PROVIDER }}
           service_account: ${{ secrets.DATA_FEEDER_SA_EMAIL }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Ensure Firebase project exists
+        run: |
+          if ! gcloud firebase projects:describe data-feeder-lcd &>/dev/null; then
+            gcloud firebase projects:addfirebase data-feeder-lcd || true
+          fi
+
       - name: Terraform Init
         run: |
           terraform -chdir=${{ env.TF_DIR }} init \

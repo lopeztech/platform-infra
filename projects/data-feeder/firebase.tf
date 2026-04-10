@@ -1,6 +1,12 @@
 # ── Firebase Project ──────────────────────────────────────────────────────────
 # Initialises Firebase on the GCP project. Required before any Firebase
 # resources (Hosting, etc.) can be created.
+# Created via gcloud in CI — import into state on first run.
+
+import {
+  id = "projects/data-feeder-lcd"
+  to = google_firebase_project.default
+}
 
 resource "google_firebase_project" "default" {
   provider = google-beta

@@ -2,6 +2,11 @@
 # Stores GCP billing export data queried by the SRE Monitor costs API.
 # Billing export itself is configured via Console (Billing > Billing export).
 
+import {
+  id = "projects/sre-monitor-lcd/datasets/billing_export"
+  to = google_bigquery_dataset.billing_export
+}
+
 resource "google_bigquery_dataset" "billing_export" {
   dataset_id    = "billing_export"
   friendly_name = "Billing Export"
