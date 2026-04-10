@@ -36,6 +36,8 @@ resource "google_project_service" "apis" {
     "secretmanager.googleapis.com",
     "billingbudgets.googleapis.com",
     "bigquery.googleapis.com",
+    "firebase.googleapis.com",
+    "firebasehosting.googleapis.com",
   ])
 
   project            = var.project_id

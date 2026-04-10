@@ -8,7 +8,7 @@ module "monitoring" {
   services = {
     "sre-monitor" = {
       domain       = var.domain
-      path         = "/health"
+      path         = "/"
       display_name = "SRE Monitor"
     }
   }

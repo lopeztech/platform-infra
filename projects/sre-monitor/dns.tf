@@ -6,11 +6,13 @@ data "cloudflare_zone" "lopezcloud" {
   name = "lopezcloud.dev"
 }
 
+# Firebase Hosting custom domain — DNS-only (grey cloud) so Firebase
+# provides its own CDN and SSL.
 resource "cloudflare_record" "app" {
   zone_id = data.cloudflare_zone.lopezcloud.id
   name    = "sre"
-  type    = "A"
-  value   = google_compute_global_address.app.address
-  proxied = false  # DNS-only — Google-managed SSL handles TLS
+  type    = "CNAME"
+  content = "${google_firebase_hosting_site.app.site_id}.web.app"
+  proxied = false # DNS-only — Firebase handles CDN and TLS
   ttl     = 3600
 }

@@ -51,6 +51,8 @@ locals {
     "roles/logging.admin",
     "roles/monitoring.admin",
     "roles/resourcemanager.projectIamAdmin",
+    "roles/firebase.admin",
+    "roles/firebasehosting.admin",
   ]
 }
 

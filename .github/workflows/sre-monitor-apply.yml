@@ -59,6 +59,7 @@ jobs:
 
   verify:
     needs: apply
+    if: always() && needs.apply.result == 'success'
     runs-on: ubuntu-latest
     env:
       PROJECT_ID: sre-monitor-lcd
@@ -101,15 +102,12 @@ jobs:
           check "Cloud Run service: sre-monitor" \
             gcloud run services describe sre-monitor --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
           INGRESS=$(gcloud run services describe sre-monitor --project="$PROJECT_ID" --region="$REGION" --format="value(metadata.annotations['run.googleapis.com/ingress'])" 2>/dev/null || echo "")
-          check_value "Cloud Run ingress = internal-and-cloud-load-balancing" "internal-and-cloud-load-balancing" "$INGRESS"
+          check_value "Cloud Run ingress = all" "all" "$INGRESS"
 
-          echo "── Load Balancer & SSL ──"
-          check "SSL cert: sre-monitor-cert-${ENV}" \
-            gcloud compute ssl-certificates describe "sre-monitor-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
-          CERT_DOMAINS=$(gcloud compute ssl-certificates describe "sre-monitor-cert-${ENV}" --project="$PROJECT_ID" --global --format="value(managed.domains)" 2>/dev/null || echo "")
-          check_value "SSL cert covers $DOMAIN" "$DOMAIN" "$CERT_DOMAINS"
-          check "HTTPS forwarding rule (443)" \
-            gcloud compute forwarding-rules describe "sre-monitor-https-forwarding-${ENV}" --project="$PROJECT_ID" --global --format="value(name)"
+          echo "── Firebase Hosting ──"
+          check "Firebase Hosting site: ${PROJECT_ID}-sre-monitor" \
+            curl -sf -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+              "https://firebasehosting.googleapis.com/v1beta1/projects/${PROJECT_ID}/sites/${PROJECT_ID}-sre-monitor"
 
           echo ""
           echo "════════════════════════════════════════"

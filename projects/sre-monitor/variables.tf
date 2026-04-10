@@ -49,18 +49,6 @@ variable "notification_email" {
   default     = "admin@lopezcloud.dev"
 }
 
-variable "cdn_default_ttl" {
-  description = "Default CDN cache TTL in seconds"
-  type        = number
-  default     = 3600
-}
-
-variable "cdn_max_ttl" {
-  description = "Maximum CDN cache TTL in seconds"
-  type        = number
-  default     = 86400
-}
-
 variable "gcp_billing_table" {
   description = "BigQuery table name for billing export (format: gcp_billing_export_v1_XXXXXX)"
   type        = string

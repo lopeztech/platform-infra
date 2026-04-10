@@ -26,7 +26,7 @@ resource "google_cloud_run_v2_service" "app" {
   name     = local.app_name
   location = var.region
   project  = var.project_id
-  ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
     containers {
@@ -115,21 +115,3 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [google_project_service.apis]
 }
 
-# Note: allUsers Cloud Run invoker is blocked by org policy constraints/iam.allowedPolicyMemberDomains.
-# To allow public access via the load balancer, either update the org policy or configure IAP
-# on the backend service and grant roles/run.invoker to the IAP service account instead.
-# resource "google_cloud_run_v2_service_iam_member" "lb_invoker" { ... }
-
-# Serverless NEG — connects the Load Balancer to Cloud Run
-resource "google_compute_region_network_endpoint_group" "app" {
-  name                  = "${local.app_name}-neg-${var.environment}"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  project               = var.project_id
-
-  cloud_run {
-    service = google_cloud_run_v2_service.app.name
-  }
-
-  depends_on = [google_project_service.apis]
-}
