@@ -68,6 +68,38 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/recalculate-frequencies:
+    post:
+      operationId: recalculateFrequencies
+      summary: Bulk-recalculate watering frequencies for all plants via Gemini
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 120.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              season:
+                type: string
+              temperature:
+                type: number
+      responses:
+        "200":
+          description: Updated plants with recalculated frequencies
+    options:
+      operationId: corsRecalculateFrequencies
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
   /plants/{plantId}:
     get:
       operationId: getPlant
