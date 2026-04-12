@@ -167,6 +167,34 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/{plantId}/photos:
+    delete:
+      operationId: deletePhoto
+      summary: Delete a plant's photo
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Photo deleted
+        "404":
+          description: Not found
+    options:
+      operationId: corsDeletePhoto
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
   /analyse-floorplan:
     post:
       operationId: analyseFloorplan
