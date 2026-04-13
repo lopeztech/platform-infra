@@ -394,6 +394,36 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/{plantId}/moisture:
+    post:
+      operationId: logMoisture
+      summary: Log a moisture meter reading for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Updated plant with new moisture reading
+        "400":
+          description: Invalid reading (must be integer 1-10)
+        "404":
+          description: Not found
+    options:
+      operationId: corsMoisture
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
   /plants/{plantId}/watering-pattern:
     get:
       operationId: getWateringPattern
