@@ -13,7 +13,7 @@ resource "google_storage_bucket" "images" {
   labels = local.labels
 
   cors {
-    origin          = ["https://${var.domain}", "http://localhost:5173"]
+    origin          = ["https://${var.domain}", "https://lopezcloud.dev", "https://www.lopezcloud.dev", "http://localhost:5173"]
     method          = ["GET", "HEAD", "PUT", "OPTIONS"]
     response_header = ["Content-Type", "ETag"]
     max_age_seconds = 3600
