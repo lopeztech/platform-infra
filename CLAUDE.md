@@ -11,7 +11,6 @@ projects/
   _template/        # Scaffold for new projects
   home-plant-tracker/
   data-feeder/
-  sre-monitor/
 .github/workflows/
   terraform-plan.yml   # Runs on PR — plans affected projects, comments results
   terraform-apply.yml  # Runs on push to master or workflow_dispatch — applies changes
@@ -24,7 +23,6 @@ versions.tf         # Root provider requirements (google ~> 5.0, terraform >= 1.
 |---------|-------------|----------------|--------|
 | home-plant-tracker | prod | home-plant-tracker-lcd | plants.lopezcloud.dev |
 | data-feeder | single | data-feeder-lcd | datafeeder.lopezcloud.dev |
-| sre-monitor | prod | sre-monitor-lcd | sre.lopezcloud.dev |
 
 ## Terraform workflow
 
@@ -48,7 +46,7 @@ terraform apply -var-file="environments/<env>/terraform.tfvars"
 ## CI/CD
 
 - **Plan**: runs on every PR touching `projects/**` or `modules/**`; posts plan output as PR comment
-- **Apply**: runs on push to `master` (auto-detects changed projects); each project has its own workflow; `home-plant-tracker`, `sre-monitor`, and `data-feeder` require a GitHub `production` environment approval
+- **Apply**: runs on push to `master` (auto-detects changed projects); each project has its own workflow; `home-plant-tracker` and `data-feeder` require a GitHub `production` environment approval
 
 ### Required GitHub secrets
 
@@ -62,8 +60,6 @@ terraform apply -var-file="environments/<env>/terraform.tfvars"
 | `GEMINI_API_KEY` | home-plant-tracker |
 | `DATA_FEEDER_WIF_PROVIDER` | data-feeder |
 | `DATA_FEEDER_SA_EMAIL` | data-feeder |
-| `SRE_MONITOR_WIF_PROVIDER` | sre-monitor |
-| `SRE_MONITOR_SA_EMAIL` | sre-monitor |
 
 ## Naming conventions
 

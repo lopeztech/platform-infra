@@ -21,7 +21,6 @@ projects/
   data-feeder/                      # Data ingestion pipeline
   finance-doctor/                   # Personal finance AI assistant
   home-plant-tracker/               # Smart plant care tracker
-  sre-monitor/                      # SRE cost & reliability dashboard
 .github/workflows/
   <project>-plan.yml                # PR plan + comment (per project)
   <project>-apply.yml               # Auto-apply on merge to master (per project)
@@ -34,7 +33,6 @@ versions.tf                         # Root provider requirements
 |---------|---------------|--------|-------------|--------------|
 | [home-plant-tracker](#home-plant-tracker) | `home-plant-tracker-lcd` | `plants.lopezcloud.dev` | prod | Firebase Hosting, Cloud Functions v2, API Gateway, Firestore, Gemini |
 | [data-feeder](#data-feeder) | `data-feeder-lcd` | `datafeeder.lopezcloud.dev` | single | Cloud Run, BigQuery, Pub/Sub, GCS (medallion), CMEK |
-| [sre-monitor](#sre-monitor) | `sre-monitor-lcd` | `sre.lopezcloud.dev` | prod | Cloud Run, Cloud CDN, BigQuery (billing export) |
 | [finance-doctor](#finance-doctor) | `finance-doctor-lcd` | `finance.lopezcloud.dev` | prod | Cloud Run, Firestore, Gemini, OAuth |
 
 ### home-plant-tracker
@@ -78,22 +76,6 @@ Data ingestion pipeline with medallion architecture (bronze/silver/gold).
 - `module.pubsub` — 3 topics, 4 subscriptions, dead-letter queue
 - `module.firestore` — job tracking with PITR enabled
 - `google_kms_crypto_key.layers` — 5 CMEK keys (bronze, silver, gold, firestore, bigquery)
-
-### sre-monitor
-
-SRE dashboard for GCP cost analysis and reliability monitoring.
-
-**Architecture:**
-- **Frontend**: React SPA served from GCS via Cloud CDN + HTTPS load balancer
-- **Backend**: Cloud Run service (internal load balancer ingress)
-- **Data**: BigQuery billing export dataset for cost queries
-- **CDN**: Cloud CDN with configurable TTL (default 1h, max 24h)
-
-**Key resources:**
-- `google_cloud_run_v2_service.app` — API backend (scale 0-3)
-- `google_storage_bucket.app` — static assets with versioning (3 versions retained)
-- `google_compute_backend_service.app` — Cloud CDN enabled
-- `google_bigquery_dataset.billing_export` — GCP billing data
 
 ### finance-doctor
 
@@ -190,8 +172,6 @@ All apply workflows require GitHub **production** environment approval before ru
 | `ML_ADMIN_TOKEN` | home-plant-tracker | ML endpoint auth token |
 | `DATA_FEEDER_WIF_PROVIDER` | data-feeder | WIF provider resource name |
 | `DATA_FEEDER_SA_EMAIL` | data-feeder | Deployer SA email |
-| `SRE_MONITOR_WIF_PROVIDER` | sre-monitor | WIF provider resource name |
-| `SRE_MONITOR_SA_EMAIL` | sre-monitor | Deployer SA email |
 | `FINANCE_DOCTOR_WIF_PROVIDER` | finance-doctor | WIF provider resource name |
 | `FINANCE_DOCTOR_SA_EMAIL` | finance-doctor | Deployer SA email |
 
@@ -222,5 +202,4 @@ Each project has configurable monthly budget alerts:
 |---------|---------------|------------------|
 | home-plant-tracker | $20 | 50%, 100%, forecasted 100% |
 | data-feeder | $50 | 50%, 100%, forecasted 100% |
-| sre-monitor | $20 | 50%, 100%, forecasted 100% |
 | finance-doctor | $20 | 50%, 100%, forecasted 100% |
