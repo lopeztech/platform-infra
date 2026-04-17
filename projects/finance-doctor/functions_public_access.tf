@@ -38,13 +38,15 @@ locals {
   ]
 }
 
-# Cloud Functions v2 names its underlying Cloud Run service identically to
-# the function name, so these resources bind directly to the generated
-# services without an explicit data lookup. The services are created by
+# Cloud Functions v2 creates a Cloud Run service per function, but Cloud
+# Run service names are constrained to [a-z0-9-] so Firebase lowercases
+# the camelCase function name when provisioning the service (e.g.
+# adviceChat → advicechat). We apply the same transform so the list
+# above stays readable in code review. The services are created by
 # `firebase deploy --only functions` from the finance-doctor app repo —
 # this file adds IAM bindings on top of them.
 resource "google_cloud_run_v2_service_iam_member" "public_callable_invoker" {
-  for_each = toset(local.callable_functions)
+  for_each = toset([for fn in local.callable_functions : lower(fn)])
 
   project  = var.project_id
   location = var.region
