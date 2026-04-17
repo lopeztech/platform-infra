@@ -37,6 +37,11 @@ resource "google_project_service" "apis" {
     "people.googleapis.com",
     "firestore.googleapis.com",
     "aiplatform.googleapis.com",
+    "firebase.googleapis.com",
+    "firebasehosting.googleapis.com",
+    "firebaserules.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "identitytoolkit.googleapis.com",
   ])
 
   project            = var.project_id

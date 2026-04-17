@@ -2,10 +2,19 @@
 # credentials are stored in state or config.
 provider "cloudflare" {}
 
-# Custom domain DNS is not used — Cloud Run domain mapping is unsupported in
-# australia-southeast1. The app is served directly via the Cloud Run URL:
-#   https://finance-doctor-ws5d6symma-ts.a.run.app
-#
-# To add a custom domain later, either:
-#   1. Move Cloud Run to a region that supports domain mapping (e.g. us-central1)
-#   2. Add a GCP load balancer with a managed SSL certificate
+data "cloudflare_zone" "lopezcloud" {
+  name = "lopezcloud.dev"
+}
+
+# Firebase Hosting custom domain — DNS-only (grey cloud) so Firebase
+# provides its own CDN and SSL. Production traffic does not move to this
+# record until #54 cuts over; until then Cloud Run continues to serve the
+# app at its *.run.app URL.
+resource "cloudflare_record" "finance" {
+  zone_id = data.cloudflare_zone.lopezcloud.id
+  name    = "finance"
+  type    = "CNAME"
+  content = "${google_firebase_hosting_site.app.site_id}.web.app"
+  proxied = false
+  ttl     = 3600
+}
