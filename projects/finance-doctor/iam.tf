@@ -1,3 +1,9 @@
+data "google_compute_default_service_account" "default" {
+  project = var.project_id
+
+  depends_on = [google_project_service.apis]
+}
+
 locals {
   operator_member = length(regexall("^serviceAccount:", var.terraform_operator_email)) > 0 ? var.terraform_operator_email : "user:${var.terraform_operator_email}"
 
@@ -133,4 +139,24 @@ resource "google_service_account_iam_member" "github_app_wif_binding" {
   service_account_id = google_service_account.github_deployer.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_app.name}/attribute.repository/${var.github_org}/${var.app_github_repo}"
+}
+
+# ── Functions Deploy — Act-as bindings ────────────────────────────────────────
+# firebase deploy --only functions needs two things beyond the deployer's
+# project-level roles:
+#   1. The deployer SA must be able to deploy a function that *runs as* the
+#      finance-doctor-functions runtime SA (iam.serviceAccountUser, SA-scoped).
+#   2. The Cloud Build default compute SA builds the function image and must
+#      likewise be able to impersonate the runtime SA.
+
+resource "google_service_account_iam_member" "deployer_act_as_functions_runtime" {
+  service_account_id = google_service_account.functions_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_service_account_iam_member" "cloudbuild_act_as_functions_runtime" {
+  service_account_id = google_service_account.functions_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${data.google_compute_default_service_account.default.email}"
 }
