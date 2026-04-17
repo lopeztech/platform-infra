@@ -1,10 +1,10 @@
-data "google_compute_default_service_account" "default" {
-  project = var.project_id
-
-  depends_on = [google_project_service.apis]
-}
-
 locals {
+  # Cloud Build's default builder identity on Cloud Functions v2 / Firebase
+  # Functions deploys. Constructed from the project number to avoid needing
+  # compute.projects.get on the deployer SA (the data source equivalent would
+  # require it).
+  default_compute_sa_email = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
   operator_member = length(regexall("^serviceAccount:", var.terraform_operator_email)) > 0 ? var.terraform_operator_email : "user:${var.terraform_operator_email}"
 
   operator_roles = [
@@ -158,5 +158,5 @@ resource "google_service_account_iam_member" "deployer_act_as_functions_runtime"
 resource "google_service_account_iam_member" "cloudbuild_act_as_functions_runtime" {
   service_account_id = google_service_account.functions_runtime.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+  member             = "serviceAccount:${local.default_compute_sa_email}"
 }
