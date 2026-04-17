@@ -45,6 +45,10 @@ locals {
     "roles/resourcemanager.projectIamAdmin",
     "roles/datastore.owner",
     "roles/appengine.appAdmin",
+    "roles/firebase.admin",
+    "roles/firebasehosting.admin",
+    "roles/cloudfunctions.admin",
+    "roles/firebaserules.admin",
   ]
 }
 
