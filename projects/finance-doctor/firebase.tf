@@ -112,3 +112,24 @@ resource "google_project_iam_member" "functions_runtime_secret_accessor" {
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.functions_runtime.email}"
 }
+
+# ── Identity Platform / Firebase Auth config ──────────────────────────────────
+# Custom Hosting domains aren't auto-added to the Firebase Auth authorized-
+# domains list — without an entry here, sign-in at the domain fails with
+# auth/unauthorized-domain. Terraform takes full ownership of this list, so
+# every domain that must work for sign-in needs to be listed explicitly.
+#
+# The first three are Firebase defaults; finance.lopezcloud.dev is the custom
+# Hosting domain from #54.
+resource "google_identity_platform_config" "default" {
+  project = var.project_id
+
+  authorized_domains = [
+    "localhost",
+    "finance-doctor-lcd.firebaseapp.com",
+    "finance-doctor-lcd.web.app",
+    "finance.lopezcloud.dev",
+  ]
+
+  depends_on = [google_project_service.apis]
+}
