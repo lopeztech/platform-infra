@@ -21,6 +21,12 @@ resource "google_monitoring_notification_channel" "budget_email" {
 }
 
 # ── Budget ────────────────────────────────────────────────────────────────────
+# Prerequisite: the caller SA must have roles/billing.costsManager (or
+# roles/billing.admin) on the billing account. This must be granted manually
+# with a human who has billing admin — CI cannot bootstrap its own billing
+# permissions. Grant once with:
+#   gcloud beta billing accounts add-iam-policy-binding <billing-account-id> \
+#     --member="serviceAccount:<ci-sa>" --role="roles/billing.costsManager"
 
 resource "google_billing_budget" "project" {
   billing_account = var.billing_account
