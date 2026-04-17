@@ -160,3 +160,13 @@ resource "google_service_account_iam_member" "cloudbuild_act_as_functions_runtim
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${local.default_compute_sa_email}"
 }
+
+# Google stopped auto-granting roles/cloudbuild.builds.builder to the default
+# compute SA on new projects in late 2024. Without it, the 2nd-gen Cloud
+# Functions build step fails on first deploy with "missing permission on the
+# build service account".
+resource "google_project_iam_member" "default_compute_sa_cloudbuild_builder" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${local.default_compute_sa_email}"
+}
