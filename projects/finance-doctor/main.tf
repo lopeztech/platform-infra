@@ -31,6 +31,7 @@ resource "google_project_service" "apis" {
     "run.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
+    "cloudbilling.googleapis.com",
     "secretmanager.googleapis.com",
     "monitoring.googleapis.com",
     "billingbudgets.googleapis.com",
@@ -40,7 +41,10 @@ resource "google_project_service" "apis" {
     "firebase.googleapis.com",
     "firebasehosting.googleapis.com",
     "firebaserules.googleapis.com",
+    "firebaseextensions.googleapis.com",
     "cloudfunctions.googleapis.com",
+    "eventarc.googleapis.com",
+    "pubsub.googleapis.com",
     "identitytoolkit.googleapis.com",
   ])
 
