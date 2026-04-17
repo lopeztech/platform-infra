@@ -30,6 +30,27 @@ resource "google_firebase_hosting_custom_domain" "app" {
   wait_dns_verification = false
 }
 
+# ── Firebase Web App ──────────────────────────────────────────────────────────
+# Registers a Firebase Web App so the browser SDK can authenticate and read
+# Firestore. Config (api_key, auth_domain, app_id) is pulled via the data
+# source and published to Secret Manager in firebase_secrets.tf so the app
+# build can fetch it at deploy time.
+
+resource "google_firebase_web_app" "app" {
+  provider        = google-beta
+  project         = var.project_id
+  display_name    = "Finance Doctor"
+  deletion_policy = "DELETE"
+
+  depends_on = [google_firebase_project.default]
+}
+
+data "google_firebase_web_app_config" "app" {
+  provider   = google-beta
+  project    = var.project_id
+  web_app_id = google_firebase_web_app.app.app_id
+}
+
 # ── Firestore Security Rules ──────────────────────────────────────────────────
 # Establishes default-deny with per-user access scoped by request.auth.uid.
 # App-side migrations (#49–#51) will refine these rules as each collection
