@@ -1,18 +1,16 @@
 rules_version = '2';
 
-// Default-deny baseline. Per-collection rules for expenses, investments,
-// family-members, and category-rules are added as each collection moves to
-// the client SDK in issues #49–#51. The baseline pattern is user-scoped
-// subcollections under /users/{uid}/, keyed by request.auth.uid.
+// Data is partitioned by the signed-in user's verified email address. This
+// matches the app-side client SDK, which writes under /users/<email>/...
+// email_verified is standard on Google sign-ins; combined with the email
+// equality check it prevents a user from accessing another user's subtree
+// even if they can forge or reuse a token without a verified email.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{collection}/{docId} {
+    match /users/{userEmail}/{document=**} {
       allow read, write: if request.auth != null
-        && request.auth.uid == userId;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
+        && request.auth.token.email == userEmail
+        && request.auth.token.email_verified == true;
     }
   }
 }
