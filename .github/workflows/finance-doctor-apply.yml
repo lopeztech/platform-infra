@@ -85,23 +85,15 @@ jobs:
               gcloud services list --project="$PROJECT_ID" --filter="config.name=$api" --format="value(state)"
           done
 
-          echo "── Secrets ──"
-          for secret in google-oauth-client-id google-oauth-client-secret nextauth-secret; do
-            check "Secret: $secret" \
-              gcloud secrets describe "$secret" --project="$PROJECT_ID" --format="value(name)"
-          done
-
-          echo "── Cloud Run ──"
-          check "Cloud Run service: finance-doctor" \
-            gcloud run services describe finance-doctor --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
-
-          echo "── Artifact Registry ──"
-          check "AR repo: finance-doctor-images" \
-            gcloud artifacts repositories describe finance-doctor-images --project="$PROJECT_ID" --location="$REGION" --format="value(name)"
-
           echo "── Service Accounts ──"
-          check "SA: finance-doctor-runtime" \
-            gcloud iam service-accounts describe "finance-doctor-runtime@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
+          check "SA: finance-doctor-functions (Callables runtime)" \
+            gcloud iam service-accounts describe "finance-doctor-functions@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" --format="value(email)"
+
+          echo "── Callable Functions (Cloud Run v2 backing services) ──"
+          for fn in advicechat dashboardtips taxadvice investmentsadvice expensesimport expensesmigrate expensesreanalyse; do
+            check "Callable: $fn" \
+              gcloud run services describe "$fn" --project="$PROJECT_ID" --region="$REGION" --format="value(name)"
+          done
 
           echo "── Firestore ──"
           check "Firestore database exists" \
