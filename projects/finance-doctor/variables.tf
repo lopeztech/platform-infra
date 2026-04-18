@@ -59,3 +59,9 @@ variable "monthly_budget_usd" {
   type        = number
   default     = 20
 }
+
+variable "vertex_ai_monthly_budget_aud" {
+  description = "Monthly budget for Vertex AI (Gemini) spend specifically, in the billing account's native currency (AUD). Separate from the project-wide cap so Gemini blow-outs get their own early-warning alert."
+  type        = number
+  default     = 10
+}
