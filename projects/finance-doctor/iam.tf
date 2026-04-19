@@ -55,6 +55,7 @@ locals {
     "roles/firebasehosting.admin",
     "roles/cloudfunctions.admin",
     "roles/firebaserules.admin",
+    "roles/pubsub.admin",
   ]
 }
 
