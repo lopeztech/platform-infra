@@ -113,6 +113,16 @@ resource "google_project_iam_member" "functions_runtime_secret_accessor" {
   member  = "serviceAccount:${google_service_account.functions_runtime.email}"
 }
 
+# Eventarc triggers (e.g. the expensesCategoriseWorker Pub/Sub trigger) invoke
+# the function's Cloud Run backing service using the runtime SA's identity.
+# Without run.invoker on the SA, every Pub/Sub delivery returns 401 and the
+# message is redelivered until it eventually drops.
+resource "google_project_iam_member" "functions_runtime_run_invoker" {
+  project = var.project_id
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.functions_runtime.email}"
+}
+
 # ── Identity Platform / Firebase Auth config ──────────────────────────────────
 # Custom Hosting domains aren't auto-added to the Firebase Auth authorized-
 # domains list — without an entry here, sign-in at the domain fails with
