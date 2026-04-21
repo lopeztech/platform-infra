@@ -1,0 +1,9 @@
+project_id               = "fantasy-coach-lcd"
+region                   = "australia-southeast1"
+environment              = "prod"
+github_org               = "lopeztech"
+github_repo              = "platform-infra"
+app_github_repo          = "fantasy-coach"
+terraform_operator_email = "admin@lopezcloud.dev"
+notification_email       = "admin@lopezcloud.dev"
+monthly_budget_usd       = 20
