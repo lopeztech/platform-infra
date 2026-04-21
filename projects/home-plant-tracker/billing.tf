@@ -30,7 +30,9 @@
 resource "google_secret_manager_secret" "stripe_secret_key" {
   secret_id = "${local.app_name}-stripe-secret-key"
   project   = var.project_id
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   labels    = local.labels
   depends_on = [google_project_service.apis]
 }
@@ -49,7 +51,9 @@ resource "google_secret_manager_secret_version" "stripe_secret_key_placeholder" 
 resource "google_secret_manager_secret" "stripe_webhook_secret" {
   secret_id = "${local.app_name}-stripe-webhook-secret"
   project   = var.project_id
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   labels    = local.labels
   depends_on = [google_project_service.apis]
 }
