@@ -22,6 +22,11 @@ locals {
 
 resource "google_project_service" "apis" {
   for_each = toset([
+    # Needed by the google provider itself for project IAM reads. Without
+    # this, every terraform plan in CI fails with "Cloud Resource Manager
+    # API has not been used in project N" — the deployer SA's quota project
+    # is fantasy-coach-lcd, and the API has to be enabled there.
+    "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "sts.googleapis.com",
