@@ -424,6 +424,57 @@ paths:
         "204":
           description: CORS preflight
 
+  /plants/{plantId}/fertilise:
+    post:
+      operationId: fertilisePlant
+      summary: Log a fertilising event for a plant
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 30.0
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+            properties:
+              productName:
+                type: string
+              npk:
+                type: string
+              dilution:
+                type: string
+              amount:
+                type: string
+              notes:
+                type: string
+      responses:
+        "200":
+          description: Updated plant with new fertiliser log entry
+          schema:
+            $ref: "#/definitions/PlantWithId"
+        "404":
+          description: Not found
+    options:
+      operationId: corsFertilisePlant
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
   /plants/{plantId}/watering-pattern:
     get:
       operationId: getWateringPattern
@@ -563,6 +614,38 @@ paths:
           description: Watering recommendations
     options:
       operationId: corsRecommendWatering
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /recommend-fertiliser:
+    post:
+      operationId: recommendFertiliser
+      summary: Get AI-powered fertiliser recommendations for a specific plant
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              species:
+                type: string
+      responses:
+        "200":
+          description: Fertiliser recommendations
+    options:
+      operationId: corsRecommendFertiliser
       summary: CORS preflight
       responses:
         "204":
