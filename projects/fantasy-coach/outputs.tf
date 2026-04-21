@@ -35,3 +35,30 @@ output "artifact_registry_repo" {
   value       = google_artifact_registry_repository.app.repository_id
   description = "Repository ID for pushing images (full path: {region}-docker.pkg.dev/{project}/{repo})"
 }
+
+# ── Firebase Hosting / Web App outputs ──────────────────────────────────────
+
+output "firebase_hosting_site_id" {
+  description = "Firebase Hosting site id — target for `firebase deploy --only hosting`"
+  value       = google_firebase_hosting_site.app.site_id
+}
+
+output "firebase_hosting_default_url" {
+  description = "Default *.web.app URL for the Hosting site (rollback target)"
+  value       = "https://${google_firebase_hosting_site.app.site_id}.web.app"
+}
+
+output "firebase_hosting_custom_domain" {
+  description = "Public custom domain the SPA is served from"
+  value       = google_firebase_hosting_custom_domain.app.custom_domain
+}
+
+output "firebase_web_app_id" {
+  description = "Firebase Web App ID — used by the SPA build"
+  value       = google_firebase_web_app.app.app_id
+}
+
+output "firebase_web_secret_ids" {
+  description = "Secret Manager IDs holding the Firebase Web App config (→ VITE_FIREBASE_* env vars at build time)"
+  value       = { for k, s in google_secret_manager_secret.firebase_web : k => s.secret_id }
+}

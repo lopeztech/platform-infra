@@ -13,9 +13,12 @@ locals {
 }
 
 # ── APIs ─────────────────────────────────────────────────────────────────────
-# Minimum set for #14 (Cloud Run + Artifact Registry + IAM/WIF). Firestore,
-# Secret Manager, Firebase, and Vertex APIs are added in their own issues
-# (#15, #16, #17, #19, #22) so each gets reviewed independently.
+# Incrementally extended per issue so each scope lands in its own review:
+#   #14 (Cloud Run + Artifact Registry + IAM/WIF) — originally added here.
+#   #19 (SPA + Firebase Hosting + custom domain) — adds firebase/hosting/
+#       identitytoolkit/secretmanager. Covers Firebase Auth Google sign-in
+#       from fantasy.lopezcloud.dev and publishing the Web App config.
+# Firestore (#15) and Vertex AI (#22) are still pending their own PRs.
 
 resource "google_project_service" "apis" {
   for_each = toset([
@@ -30,6 +33,11 @@ resource "google_project_service" "apis" {
     "serviceusage.googleapis.com",
     "logging.googleapis.com",
     "monitoring.googleapis.com",
+    # Added in #19 (SPA hosting + auth).
+    "firebase.googleapis.com",
+    "firebasehosting.googleapis.com",
+    "identitytoolkit.googleapis.com",
+    "secretmanager.googleapis.com",
   ])
 
   project            = var.project_id

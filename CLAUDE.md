@@ -24,7 +24,7 @@ versions.tf         # Root provider requirements (google ~> 5.0, terraform >= 1.
 | home-plant-tracker | prod | home-plant-tracker-lcd | plants.lopezcloud.dev |
 | data-feeder | single | data-feeder-lcd | datafeeder.lopezcloud.dev |
 | finance-doctor | prod | finance-doctor-lcd | finance.lopezcloud.dev |
-| fantasy-coach | prod | fantasy-coach-lcd | (TBD — see lopeztech/fantasy-coach#19) |
+| fantasy-coach | prod | fantasy-coach-lcd | fantasy.lopezcloud.dev |
 
 ## Terraform workflow
 
