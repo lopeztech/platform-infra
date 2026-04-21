@@ -1,5 +1,6 @@
 project_id               = "fantasy-coach-lcd"
 region                   = "australia-southeast1"
+domain                   = "fantasy.lopezcloud.dev"
 environment              = "prod"
 github_org               = "lopeztech"
 github_repo              = "platform-infra"
