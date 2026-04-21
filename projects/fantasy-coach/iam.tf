@@ -76,6 +76,10 @@ locals {
     # Manage google_identity_platform_config (authorised domains, Google SSO).
     # firebase.admin does not imply identitytoolkit write access.
     "roles/identityplatform.admin",
+    # Create + version the Firebase Web App config secrets (firebase_secrets.tf).
+    # Needs .admin rather than .accessor because terraform manages the secret
+    # resources themselves, not just reads their latest version.
+    "roles/secretmanager.admin",
   ]
 }
 
