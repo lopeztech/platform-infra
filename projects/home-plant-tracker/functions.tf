@@ -117,9 +117,16 @@ resource "google_cloudfunctions2_function" "plants" {
     all_traffic_on_latest_revision = true
 
     environment_variables = {
-      PROJECT_ID            = var.project_id
-      IMAGES_BUCKET         = google_storage_bucket.images.name
-      SERVICE_ACCOUNT_EMAIL = google_service_account.plants_function.email
+      PROJECT_ID                          = var.project_id
+      IMAGES_BUCKET                       = google_storage_bucket.images.name
+      SERVICE_ACCOUNT_EMAIL               = google_service_account.plants_function.email
+      BILLING_ENABLED                     = var.billing_enabled ? "true" : "false"
+      BILLING_SUCCESS_URL                 = "https://${var.domain}"
+      BILLING_CANCEL_URL                  = "https://${var.domain}"
+      STRIPE_PRICE_HOME_PRO_MONTHLY       = var.stripe_price_home_pro_monthly
+      STRIPE_PRICE_HOME_PRO_ANNUAL        = var.stripe_price_home_pro_annual
+      STRIPE_PRICE_LANDSCAPER_PRO_MONTHLY = var.stripe_price_landscaper_pro_monthly
+      STRIPE_PRICE_LANDSCAPER_PRO_ANNUAL  = var.stripe_price_landscaper_pro_annual
     }
 
     secret_environment_variables {
@@ -135,6 +142,20 @@ resource "google_cloudfunctions2_function" "plants" {
       secret     = google_secret_manager_secret.ml_admin_token.secret_id
       version    = "latest"
     }
+
+    secret_environment_variables {
+      key        = "STRIPE_SECRET_KEY"
+      project_id = var.project_id
+      secret     = google_secret_manager_secret.stripe_secret_key.secret_id
+      version    = "latest"
+    }
+
+    secret_environment_variables {
+      key        = "STRIPE_WEBHOOK_SECRET"
+      project_id = var.project_id
+      secret     = google_secret_manager_secret.stripe_webhook_secret.secret_id
+      version    = "latest"
+    }
   }
 
   labels = local.labels
@@ -143,6 +164,8 @@ resource "google_cloudfunctions2_function" "plants" {
     google_project_service.apis,
     google_secret_manager_secret_iam_member.plants_function_gemini_key,
     google_secret_manager_secret_iam_member.plants_function_ml_admin_token,
+    google_secret_manager_secret_iam_member.plants_function_stripe_secret_key,
+    google_secret_manager_secret_iam_member.plants_function_stripe_webhook_secret,
     google_storage_bucket_iam_member.cloudbuild_source_reader,
     google_project_iam_member.cloudbuild_artifactregistry_writer,
     google_project_iam_member.cloudbuild_logging,

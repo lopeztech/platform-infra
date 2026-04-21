@@ -70,3 +70,38 @@ variable "monthly_budget_usd" {
   type        = number
   default     = 20
 }
+
+# ── Stripe billing ──────────────────────────────────────────────────────────
+# Flip to true after STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET are populated
+# in Secret Manager and Price IDs below are set. Until then, the backend
+# reports tier=free for everyone and all tier gates / quotas are no-ops.
+
+variable "billing_enabled" {
+  description = "Whether to enable Stripe subscription billing (requires populated secrets + price IDs)."
+  type        = bool
+  default     = false
+}
+
+variable "stripe_price_home_pro_monthly" {
+  description = "Stripe Price ID (price_...) for Home Pro monthly subscription."
+  type        = string
+  default     = ""
+}
+
+variable "stripe_price_home_pro_annual" {
+  description = "Stripe Price ID (price_...) for Home Pro annual subscription."
+  type        = string
+  default     = ""
+}
+
+variable "stripe_price_landscaper_pro_monthly" {
+  description = "Stripe Price ID (price_...) for Landscaper Pro monthly subscription."
+  type        = string
+  default     = ""
+}
+
+variable "stripe_price_landscaper_pro_annual" {
+  description = "Stripe Price ID (price_...) for Landscaper Pro annual subscription."
+  type        = string
+  default     = ""
+}

@@ -651,6 +651,94 @@ paths:
         "204":
           description: CORS preflight
 
+  /billing/subscription:
+    get:
+      operationId: getSubscription
+      summary: Return the caller's current tier, status, quotas, and usage
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Subscription + usage snapshot
+    options:
+      operationId: corsGetSubscription
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /billing/create-checkout-session:
+    post:
+      operationId: createCheckoutSession
+      summary: Start a Stripe Checkout session for a tier upgrade
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 30.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              tier:
+                type: string
+              interval:
+                type: string
+      responses:
+        "200":
+          description: Returns the Stripe Checkout redirect URL
+        "503":
+          description: Billing not enabled
+    options:
+      operationId: corsCreateCheckoutSession
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /billing/create-portal-session:
+    post:
+      operationId: createPortalSession
+      summary: Open the Stripe Customer Portal for plan management
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 30.0
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Returns the Stripe Customer Portal URL
+    options:
+      operationId: corsCreatePortalSession
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /billing/webhook:
+    post:
+      operationId: stripeWebhook
+      summary: Stripe webhook — signed with STRIPE_WEBHOOK_SECRET (no API key)
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 30.0
+      # Intentionally no `security` — Stripe signs webhooks with its own
+      # secret, verified by the backend via constructEvent().
+      responses:
+        "200":
+          description: Event accepted (or ignored / duplicate)
+        "400":
+          description: Signature verification failed
+
   /config/floorplan:
     get:
       operationId: getFloorplan
