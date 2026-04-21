@@ -94,7 +94,7 @@ resource "google_service_account_iam_member" "deployer_act_as_runtime" {
 
 resource "google_iam_workload_identity_pool" "github" {
   workload_identity_pool_id = "${local.app_name}-github-pool"
-  display_name              = "GitHub Actions Pool (platform-infra)"
+  display_name              = "GHA Pool (platform-infra)"
   description               = "Identity pool for platform-infra OIDC tokens"
   project                   = var.project_id
 
@@ -131,7 +131,7 @@ resource "google_service_account_iam_member" "github_wif_binding" {
 
 resource "google_iam_workload_identity_pool" "github_app" {
   workload_identity_pool_id = "${local.app_name}-app-github-pool"
-  display_name              = "GitHub Actions Pool (app repo)"
+  display_name              = "GHA Pool (app repo)"
   description               = "Identity pool for lopeztech/fantasy-coach OIDC tokens"
   project                   = var.project_id
 
