@@ -23,6 +23,8 @@ versions.tf         # Root provider requirements (google ~> 5.0, terraform >= 1.
 |---------|-------------|----------------|--------|
 | home-plant-tracker | prod | home-plant-tracker-lcd | plants.lopezcloud.dev |
 | data-feeder | single | data-feeder-lcd | datafeeder.lopezcloud.dev |
+| finance-doctor | prod | finance-doctor-lcd | finance.lopezcloud.dev |
+| fantasy-coach | prod | fantasy-coach-lcd | (TBD — see lopeztech/fantasy-coach#19) |
 
 ## Terraform workflow
 
@@ -60,6 +62,8 @@ terraform apply -var-file="environments/<env>/terraform.tfvars"
 | `GEMINI_API_KEY` | home-plant-tracker |
 | `DATA_FEEDER_WIF_PROVIDER` | data-feeder |
 | `DATA_FEEDER_SA_EMAIL` | data-feeder |
+| `FANTASY_COACH_WIF_PROVIDER` | fantasy-coach |
+| `FANTASY_COACH_SA_EMAIL` | fantasy-coach |
 
 ## Naming conventions
 
