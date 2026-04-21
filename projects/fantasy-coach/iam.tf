@@ -67,6 +67,8 @@ locals {
     "roles/resourcemanager.projectIamAdmin",
     "roles/logging.admin",
     "roles/monitoring.admin",
+    # Firebase Hosting deploys from lopeztech/fantasy-coach#72.
+    "roles/firebasehosting.admin",
   ]
 }
 

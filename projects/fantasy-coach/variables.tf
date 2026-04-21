@@ -9,6 +9,11 @@ variable "region" {
   default     = "australia-southeast1"
 }
 
+variable "domain" {
+  description = "Public custom domain for the SPA — served by Firebase Hosting."
+  type        = string
+}
+
 variable "environment" {
   description = "Deployment environment label (prod, staging, etc.)"
   type        = string

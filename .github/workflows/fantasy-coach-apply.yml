@@ -39,6 +39,8 @@ jobs:
             -input=false
 
       - name: Terraform Apply
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           terraform -chdir=${{ env.TF_DIR }} apply \
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
@@ -76,7 +78,14 @@ jobs:
           }
 
           echo "── APIs ──"
-          for api in iam.googleapis.com run.googleapis.com artifactregistry.googleapis.com; do
+          for api in \
+              iam.googleapis.com \
+              run.googleapis.com \
+              artifactregistry.googleapis.com \
+              firebase.googleapis.com \
+              firebasehosting.googleapis.com \
+              identitytoolkit.googleapis.com \
+              secretmanager.googleapis.com; do
             check "API: $api" \
               gcloud services list --project="$PROJECT_ID" --filter="config.name=$api" --format="value(state)"
           done
@@ -94,6 +103,16 @@ jobs:
           echo "── Cloud Run ──"
           check "Service: fantasy-coach-api" \
             gcloud run services describe fantasy-coach-api --project="$PROJECT_ID" --region="$REGION"
+
+          echo "── Firebase Hosting ──"
+          check "Hosting site: fantasy-coach-lcd" \
+            gcloud firebase hosting sites describe fantasy-coach-lcd --project="$PROJECT_ID"
+
+          echo "── Secret Manager (Firebase Web config) ──"
+          for s in firebase-web-api-key firebase-web-auth-domain firebase-web-project-id firebase-web-app-id; do
+            check "Secret: $s" \
+              gcloud secrets describe "$s" --project="$PROJECT_ID"
+          done
 
           echo ""
           echo "════════════════════════════════════════"
