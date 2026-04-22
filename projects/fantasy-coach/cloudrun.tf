@@ -81,6 +81,12 @@ resource "google_cloud_run_v2_service" "api" {
       # The app-repo deploy workflow rotates the image. Terraform shouldn't
       # churn it back to the placeholder on the next plan.
       template[0].containers[0].image,
+      # The deploy workflow sets runtime env vars (FIREBASE_PROJECT_ID,
+      # STORAGE_BACKEND once #15 lands, etc.) via `gcloud run deploy
+      # --set-env-vars`. Terraform must not reconcile them back to empty on
+      # apply — that would silently disable FirebaseAuthMiddleware and leave
+      # /predictions open. The deploy workflow is the source of truth.
+      template[0].containers[0].env,
       # `client` / `client_version` are set by `gcloud run deploy` and would
       # otherwise show as cosmetic drift on every apply.
       client,
