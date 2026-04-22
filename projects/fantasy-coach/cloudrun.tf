@@ -34,6 +34,18 @@ resource "google_cloud_run_v2_service" "api" {
       max_instance_count = 2
     }
 
+    # Right-sized from Cloud Run's 300s default after 13h of post-launch
+    # metrics. Cold-round scrape does ~8 sequential nrl.com fetches, so
+    # 60s is unsafe until fantasy-coach#65 lands and scrape is off-path —
+    # 120s keeps headroom while still cutting 60% off the default.
+    timeout = "120s"
+
+    # Pinned at Cloud Run's default (80). Explicit so TF and the
+    # app-repo deploy workflow can't silently drift apart. Candidate to
+    # revisit (80 → 200) after 30 days of real traffic on what is
+    # mostly an I/O endpoint.
+    max_instance_request_concurrency = 80
+
     containers {
       # Placeholder. First real image is pushed + deployed by the app-repo
       # workflow in lopeztech/fantasy-coach; terraform ignores image drift
@@ -46,8 +58,12 @@ resource "google_cloud_run_v2_service" "api" {
 
       resources {
         limits = {
-          cpu    = "1"
-          memory = "512Mi"
+          cpu = "1"
+          # Halved from 512Mi — observed p99 container RSS stays under
+          # 20 % of 512Mi across 20 revisions. 256Mi still leaves ~2.5×
+          # headroom. Must stay in sync with the deploy-workflow flag in
+          # lopeztech/fantasy-coach — both are the source of truth.
+          memory = "256Mi"
         }
         cpu_idle          = true # throttle CPU when not serving a request
         startup_cpu_boost = true # briefly lift the throttle on cold start
