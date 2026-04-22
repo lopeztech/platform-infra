@@ -77,3 +77,45 @@ resource "google_firestore_index" "matches_by_season_round" {
 # No composite index needed for the ``predictions`` collection —
 # ``FirestorePredictionStore`` reads by document ID (``"{season}-{round}"``),
 # which Firestore resolves without any index at all.
+
+# ── team_list_snapshots (fantasy-coach#24) ───────────────────────────────────
+# Append-only collection of team-list snapshots captured by the precompute
+# Job each time it scrapes. Queried two ways at the moment:
+#   1. per-match history — ``where(match_id) [+ where(team_id)] order_by(scraped_at)``
+#   2. season-wide analytics — ``where(season) order_by(scraped_at)``
+# The 3-field (match_id, team_id, scraped_at) index covers query 1 via
+# prefix. Query 2 gets its own index.
+
+resource "google_firestore_index" "team_list_by_match_team_time" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "team_list_snapshots"
+
+  fields {
+    field_path = "match_id"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "team_id"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "scraped_at"
+    order      = "ASCENDING"
+  }
+}
+
+resource "google_firestore_index" "team_list_by_season_time" {
+  project    = var.project_id
+  database   = google_firestore_database.default.name
+  collection = "team_list_snapshots"
+
+  fields {
+    field_path = "season"
+    order      = "ASCENDING"
+  }
+  fields {
+    field_path = "scraped_at"
+    order      = "ASCENDING"
+  }
+}
