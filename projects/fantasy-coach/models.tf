@@ -32,7 +32,9 @@ resource "google_storage_bucket" "models" {
       type = "Delete"
     }
     condition {
-      with_state                 = "NONCURRENT"
+      # ARCHIVED = noncurrent (non-live) object versions — the GCS API term
+      # for what versioning produces when an object is overwritten.
+      with_state                 = "ARCHIVED"
       num_newer_versions         = 5
       days_since_noncurrent_time = 30
     }
