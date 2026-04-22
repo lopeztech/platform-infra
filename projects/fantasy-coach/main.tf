@@ -18,7 +18,10 @@ locals {
 #   #19 (SPA + Firebase Hosting + custom domain) — adds firebase/hosting/
 #       identitytoolkit/secretmanager. Covers Firebase Auth Google sign-in
 #       from fantasy.lopezcloud.dev and publishing the Web App config.
-# Firestore (#15) and Vertex AI (#22) are still pending their own PRs.
+#   #65 (precompute Job + Firestore) — adds firestore/cloudscheduler. The
+#       app-repo Firestore code (#15) landed before the infra side; this
+#       PR catches up both at once.
+# Vertex AI (#22) is still pending its own PR.
 
 resource "google_project_service" "apis" {
   for_each = toset([
@@ -43,6 +46,9 @@ resource "google_project_service" "apis" {
     "firebasehosting.googleapis.com",
     "identitytoolkit.googleapis.com",
     "secretmanager.googleapis.com",
+    # Added in fantasy-coach#65 (precompute Job + Firestore).
+    "firestore.googleapis.com",
+    "cloudscheduler.googleapis.com",
   ])
 
   project            = var.project_id

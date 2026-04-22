@@ -38,11 +38,25 @@ resource "google_service_account" "runtime" {
   depends_on = [google_project_service.apis]
 }
 
-# No project-level roles yet — runtime currently only needs to serve /healthz.
-# Future issues add:
-#   - roles/datastore.user            (#15 Firestore)
-#   - roles/secretmanager.secretAccessor (#16 Secret Manager)
-#   - roles/aiplatform.user           (#22 Vertex Gemini)
+# The Cloud Run service + the precompute Job (fantasy-coach#65) both run as
+# this SA. They share the Firestore state (matches Repository + prediction
+# cache) so both need read/write. roles/datastore.user covers both.
+locals {
+  runtime_roles = [
+    "roles/datastore.user", # Firestore read + write — matches + prediction cache
+    # Future issues add:
+    #   - roles/secretmanager.secretAccessor (#16 Secret Manager)
+    #   - roles/aiplatform.user           (#22 Vertex Gemini)
+  ]
+}
+
+resource "google_project_iam_member" "runtime" {
+  for_each = toset(local.runtime_roles)
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
 
 # ── Deployer SA — used by GitHub Actions to roll revisions ───────────────────
 
@@ -176,4 +190,19 @@ resource "google_service_account_iam_member" "github_app_wif_binding" {
   service_account_id = google_service_account.github_deployer.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_app.name}/attribute.repository/${var.github_org}/${var.app_github_repo}"
+}
+
+# ── Scheduler-invoker SA (fantasy-coach#65) ──────────────────────────────────
+# Dedicated identity Cloud Scheduler uses to invoke the precompute Job. Kept
+# separate from runtime/deployer so a compromise in Scheduler can only run
+# the Job, not touch anything else. The binding that grants run.invoker on
+# the Job itself lives in scheduler.tf to avoid a resource-ordering loop.
+
+resource "google_service_account" "scheduler" {
+  account_id   = "${local.app_name}-scheduler"
+  display_name = "Fantasy Coach Cloud Scheduler invoker"
+  description  = "Identity Cloud Scheduler uses to trigger the precompute Job"
+  project      = var.project_id
+
+  depends_on = [google_project_service.apis]
 }
