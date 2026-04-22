@@ -62,3 +62,15 @@ output "firebase_web_secret_ids" {
   description = "Secret Manager IDs holding the Firebase Web App config (→ VITE_FIREBASE_* env vars at build time)"
   value       = { for k, s in google_secret_manager_secret.firebase_web : k => s.secret_id }
 }
+
+# ── Model artefact bucket (fantasy-coach#93) ────────────────────────────────
+
+output "models_bucket_name" {
+  description = "GCS bucket holding trained model artefacts (precompute Job downloads from here)"
+  value       = google_storage_bucket.models.name
+}
+
+output "models_bucket_latest_logistic_uri" {
+  description = "Canonical gs:// URI of the logistic artefact the Job downloads at startup (→ FANTASY_COACH_MODEL_GCS_URI)"
+  value       = "gs://${google_storage_bucket.models.name}/logistic/latest.joblib"
+}

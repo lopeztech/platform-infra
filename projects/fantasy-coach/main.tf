@@ -49,6 +49,8 @@ resource "google_project_service" "apis" {
     # Added in fantasy-coach#65 (precompute Job + Firestore).
     "firestore.googleapis.com",
     "cloudscheduler.googleapis.com",
+    # Added in fantasy-coach#93 (model artefact bucket).
+    "storage.googleapis.com",
   ])
 
   project            = var.project_id
