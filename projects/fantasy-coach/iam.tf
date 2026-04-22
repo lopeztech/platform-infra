@@ -94,6 +94,11 @@ locals {
     # Needs .admin rather than .accessor because terraform manages the secret
     # resources themselves, not just reads their latest version.
     "roles/secretmanager.admin",
+    # Create + manage google_cloud_scheduler_job resources (scheduler.tf,
+    # fantasy-coach#65). roles/run.admin doesn't grant cloudscheduler.jobs.*
+    # so TF's first apply failed with 403 — chicken-and-egg, same category
+    # as the firebase/identityplatform grants above.
+    "roles/cloudscheduler.admin",
   ]
 }
 
