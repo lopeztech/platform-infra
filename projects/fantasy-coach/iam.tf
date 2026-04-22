@@ -69,6 +69,17 @@ locals {
     "roles/monitoring.admin",
     # Firebase Hosting deploys from lopeztech/fantasy-coach#72.
     "roles/firebasehosting.admin",
+    # Create google_firebase_project + google_firebase_web_app during apply.
+    # Without this the first apply fails with "caller does not have permission"
+    # on both resources. Granted before the apply runs — chicken-and-egg.
+    "roles/firebase.admin",
+    # Manage google_identity_platform_config (authorised domains, Google SSO).
+    # firebase.admin does not imply identitytoolkit write access.
+    "roles/identityplatform.admin",
+    # Create + version the Firebase Web App config secrets (firebase_secrets.tf).
+    # Needs .admin rather than .accessor because terraform manages the secret
+    # resources themselves, not just reads their latest version.
+    "roles/secretmanager.admin",
   ]
 }
 
