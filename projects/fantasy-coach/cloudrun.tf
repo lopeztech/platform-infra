@@ -59,11 +59,14 @@ resource "google_cloud_run_v2_service" "api" {
       resources {
         limits = {
           cpu = "1"
-          # Halved from 512Mi — observed p99 container RSS stays under
-          # 20 % of 512Mi across 20 revisions. 256Mi still leaves ~2.5×
-          # headroom. Must stay in sync with the deploy-workflow flag in
-          # lopeztech/fantasy-coach — both are the source of truth.
-          memory = "256Mi"
+          # gen2 execution environment has a 512Mi minimum enforced by
+          # `gcloud run deploy`. The Cloud Run API accepts smaller values
+          # so a bare `terraform apply` can set 256Mi successfully, but
+          # every subsequent app-repo deploy then fails. Keep at 512Mi to
+          # stay in sync with the deploy workflow; dropping below would
+          # require switching execution_environment to gen1, which costs
+          # us startup-cpu-boost + the newer networking stack.
+          memory = "512Mi"
         }
         cpu_idle          = true # throttle CPU when not serving a request
         startup_cpu_boost = true # briefly lift the throttle on cold start
