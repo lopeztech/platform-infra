@@ -105,8 +105,15 @@ jobs:
             gcloud run services describe fantasy-coach-api --project="$PROJECT_ID" --region="$REGION"
 
           echo "── Firebase Hosting ──"
-          check "Hosting site: fantasy-coach-lcd" \
-            gcloud firebase hosting sites describe fantasy-coach-lcd --project="$PROJECT_ID"
+          # gcloud has no `firebase hosting sites describe` subcommand; hit
+          # the Firebase Hosting REST API directly. A 200 proves the site
+          # exists and our token has permission to read it.
+          check "Hosting site: fantasy-coach-lcd" bash -c '
+            STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+              "https://firebasehosting.googleapis.com/v1beta1/projects/'"$PROJECT_ID"'/sites/'"$PROJECT_ID"'")
+            [ "$STATUS" = "200" ]
+          '
 
           echo "── Secret Manager (Firebase Web config) ──"
           for s in firebase-web-api-key firebase-web-auth-domain firebase-web-project-id firebase-web-app-id; do

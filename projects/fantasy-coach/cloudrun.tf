@@ -94,6 +94,34 @@ resource "google_cloud_run_v2_service" "api" {
   ]
 }
 
-# No allUsers invoker — auth wiring lives in #17. For now the service is
-# reachable only via identity tokens (Google-signed), which is what the
-# deploy workflow uses for its /healthz smoke test.
+# ── Public-access binding for the Cloud Run API ──────────────────────────────
+# The SPA at fantasy.lopezcloud.dev calls this service directly from the
+# browser. Browsers can't mint Google-signed OAuth2 ID tokens, so Cloud Run's
+# IAM layer can't gate the request — auth happens one level in, at
+# FirebaseAuthMiddleware (src/fantasy_coach/auth.py), which rejects any
+# non-/healthz request missing a valid Firebase ID token with 401.
+#
+# ── One-time manual bootstrap (per project) ──────────────────────────────────
+# The organisation's iam.allowedPolicyMemberDomains constraint blocks
+# allUsers bindings by default. Override it once at the project level with
+# an org admin's own credentials — roles/orgpolicy.policyAdmin isn't
+# grantable at the project level, so neither terraform nor the deployer SA
+# can apply it:
+#
+#   cat > /tmp/allow-public.yaml <<'EOF'
+#   name: projects/fantasy-coach-lcd/policies/iam.allowedPolicyMemberDomains
+#   spec:
+#     rules:
+#     - allowAll: true
+#   EOF
+#   gcloud org-policies set-policy /tmp/allow-public.yaml
+#
+# Once the constraint is lifted, terraform owns the binding below. Same
+# pattern as finance-doctor's functions_public_access.tf.
+resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.api.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
