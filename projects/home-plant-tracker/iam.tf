@@ -161,3 +161,68 @@ resource "google_storage_bucket_iam_member" "deployer_function_source_writer" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.github_deployer.email}"
 }
+
+# ── Service Account — GitHub Actions Planner (PR read-only) ──────────────────
+# Read-only SA used by `terraform plan` on PR branches. The deployer SA above
+# is write-capable and locked to master; this SA is intentionally scoped to
+# viewer-level so a rogue PR workflow cannot mutate GCP state.
+
+resource "google_service_account" "github_planner" {
+  account_id   = "${local.app_name}-planner"
+  display_name = "Plant Tracker Terraform Planner (PR)"
+  description  = "Read-only SA for terraform plan on PR branches"
+  project      = var.project_id
+
+  depends_on = [google_project_service.apis]
+}
+
+locals {
+  planner_roles = [
+    "roles/viewer",                       # Broad read for resource refresh
+    "roles/iam.securityReviewer",         # Full IAM policy read (viewer misses some)
+    "roles/secretmanager.secretAccessor", # Drift detection on google_secret_manager_secret_version
+  ]
+}
+
+resource "google_project_iam_member" "planner" {
+  for_each = toset(local.planner_roles)
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.github_planner.email}"
+}
+
+# ── WIF provider for PR-branch terraform plan ─────────────────────────────────
+# Same pool as the deployer provider, but gated on event_name == 'pull_request'
+# and bound to the read-only planner SA. The plan workflow uses this provider;
+# the apply workflow continues to use github-provider (master-only + deployer).
+
+resource "google_iam_workload_identity_pool_provider" "github_pr" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-pr-provider"
+  display_name                       = "GitHub OIDC (PR plan)"
+  project                            = var.project_id
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
+  }
+
+  attribute_mapping = {
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.ref"        = "assertion.ref"
+    "attribute.event_name" = "assertion.event_name"
+  }
+
+  attribute_condition = "assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'pull_request'"
+}
+
+# Only the planner SA can be impersonated from this provider's principal set;
+# the deployer binding above uses the same principalSet but lives on a
+# different provider, so event_name routing is what picks the SA.
+resource "google_service_account_iam_member" "github_pr_wif_binding" {
+  service_account_id = google_service_account.github_planner.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
+}

@@ -43,6 +43,21 @@ output "service_account_email" {
   value       = google_service_account.github_deployer.email
 }
 
+output "pr_workload_identity_provider" {
+  description = "WIF provider for PR-branch terraform plan — set as HOME_PLANT_TRACKER_PLANNER_WIF_PROVIDER in GitHub Secrets"
+  value       = google_iam_workload_identity_pool_provider.github_pr.name
+}
+
+output "planner_service_account_email" {
+  description = "Read-only planner SA email — set as HOME_PLANT_TRACKER_PLANNER_SA_EMAIL in GitHub Secrets"
+  value       = google_service_account.github_planner.email
+}
+
+output "planner_state_bucket_grant" {
+  description = "One-time manual step: grant the planner SA read on the state bucket (state bucket lives in a different project, so can't be managed here)"
+  value       = "gsutil iam ch serviceAccount:${google_service_account.github_planner.email}:roles/storage.objectViewer gs://platform-infra-lcd-tf-state"
+}
+
 output "artifact_registry_repo" {
   description = "Artifact Registry repo URL for Docker pushes"
   value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app.repository_id}"
@@ -72,12 +87,14 @@ output "ml_data_bucket" {
 output "github_secrets" {
   description = "Copy these values into your GitHub repository secrets for lopeztech/platform-infra"
   value = {
-    HOME_PLANT_TRACKER_WIF_PROVIDER = google_iam_workload_identity_pool_provider.github.name
-    HOME_PLANT_TRACKER_SA_EMAIL     = google_service_account.github_deployer.email
-    ARTIFACT_REGISTRY_REPO          = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app.repository_id}"
-    VITE_API_BASE_URL               = "https://${google_api_gateway_gateway.app.default_hostname}"
-    VITE_GOOGLE_CLIENT_ID           = "(set manually — see iap.tf for instructions)"
-    VITE_API_KEY                    = "(run: terraform output -raw api_key)"
+    HOME_PLANT_TRACKER_WIF_PROVIDER         = google_iam_workload_identity_pool_provider.github.name
+    HOME_PLANT_TRACKER_SA_EMAIL             = google_service_account.github_deployer.email
+    HOME_PLANT_TRACKER_PLANNER_WIF_PROVIDER = google_iam_workload_identity_pool_provider.github_pr.name
+    HOME_PLANT_TRACKER_PLANNER_SA_EMAIL     = google_service_account.github_planner.email
+    ARTIFACT_REGISTRY_REPO                  = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app.repository_id}"
+    VITE_API_BASE_URL                       = "https://${google_api_gateway_gateway.app.default_hostname}"
+    VITE_GOOGLE_CLIENT_ID                   = "(set manually — see iap.tf for instructions)"
+    VITE_API_KEY                            = "(run: terraform output -raw api_key)"
   }
 }
 
