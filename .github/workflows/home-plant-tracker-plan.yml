@@ -32,10 +32,13 @@ jobs:
           key: terraform-providers-${{ hashFiles('projects/home-plant-tracker/.terraform.lock.hcl') }}
           restore-keys: terraform-providers-
 
+      # PR plans auth as the read-only planner SA via a PR-scoped WIF provider.
+      # Fallback to the deployer secrets lets this workflow keep running while
+      # the new planner resources are being applied for the first time.
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
-          service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
+          workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_PLANNER_WIF_PROVIDER || secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
+          service_account: ${{ secrets.HOME_PLANT_TRACKER_PLANNER_SA_EMAIL || secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
 
       - name: Terraform Init
         run: |
@@ -44,6 +47,8 @@ jobs:
             -backend-config="prefix=terraform/state/home-plant-tracker/${{ env.TF_ENV }}" \
             -input=false
 
+      # -lock=false: planner SA only has objectViewer on the state bucket, so
+      # it can't create/delete the lock object. Safe for plan (read-only).
       - name: Terraform Plan
         id: plan
         env:
@@ -55,6 +60,7 @@ jobs:
             -var="function_source_object=${{ secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
             -var="billing_account=${{ secrets.BILLING_ACCOUNT_ID }}" \
             -input=false \
+            -lock=false \
             -no-color \
             -out=tfplan 2>&1 | tee plan.txt
           echo "exitcode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
