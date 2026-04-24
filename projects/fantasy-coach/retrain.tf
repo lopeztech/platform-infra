@@ -64,6 +64,25 @@ resource "google_secret_manager_secret_iam_member" "retrain_token_access" {
   member    = "serviceAccount:${google_service_account.retrain.email}"
 }
 
+# Cloud Run validates ``secret_key_ref`` at Job creation and refuses to
+# point at an empty secret — ``version = "latest"`` requires at least one
+# version to exist. This placeholder version is created once so the Job
+# can be provisioned before the real PAT is loaded. The real PAT is added
+# manually via ``gcloud secrets versions add`` (see PR body); that creates
+# a new version that becomes ``latest``, and ``ignore_changes`` keeps
+# Terraform from reconciling the placeholder back on top.
+resource "google_secret_manager_secret_version" "github_model_drift_token_placeholder" {
+  secret      = google_secret_manager_secret.github_model_drift_token.id
+  secret_data = "placeholder-rotate-me-via-gcloud-secrets-versions-add"
+
+  lifecycle {
+    ignore_changes = [
+      secret_data,
+      enabled,
+    ]
+  }
+}
+
 # Deployer SA also needs secret accessor so the CI deploy workflow's image
 # rotation step (which applies env vars) can read it when mounting to the
 # Job — not strictly required today (mounting is value-by-reference, resolved
@@ -154,6 +173,7 @@ resource "google_cloud_run_v2_job" "retrain" {
     google_project_iam_member.retrain_firestore,
     google_storage_bucket_iam_member.retrain_models_admin,
     google_secret_manager_secret_iam_member.retrain_token_access,
+    google_secret_manager_secret_version.github_model_drift_token_placeholder,
   ]
 }
 
