@@ -178,9 +178,12 @@ resource "google_service_account" "github_planner" {
 
 locals {
   planner_roles = [
-    "roles/viewer",                       # Broad read for resource refresh
-    "roles/iam.securityReviewer",         # Full IAM policy read (viewer misses some)
-    "roles/secretmanager.secretAccessor", # Drift detection on google_secret_manager_secret_version
+    "roles/viewer",                          # Broad read for resource refresh
+    "roles/iam.securityReviewer",            # Full IAM policy read (viewer misses some)
+    "roles/secretmanager.secretAccessor",    # Drift detection on google_secret_manager_secret_version
+    "roles/serviceusage.serviceUsageConsumer", # Required for `serviceusage.services.use` —
+                                             # without it, plan refresh of Firebase project / Storage
+                                             # buckets fails with USER_PROJECT_DENIED.
   ]
 }
 
