@@ -2074,6 +2074,1755 @@ paths:
         "204":
           description: CORS preflight
 
+  # ── Per-plant care logs: measurements ──────────────────────────────────────
+  /plants/{plantId}/measurements:
+    get:
+      operationId: listMeasurements
+      summary: List growth measurements for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Measurement list
+    post:
+      operationId: createMeasurement
+      summary: Record a growth measurement
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsMeasurements
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/measurements/{measurementId}:
+    delete:
+      operationId: deleteMeasurement
+      summary: Delete a measurement
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: measurementId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsMeasurementById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: measurementId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant care logs: phenology ─────────────────────────────────────────
+  /plants/{plantId}/phenology:
+    get:
+      operationId: listPhenology
+      summary: List phenology events for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Phenology event list
+    post:
+      operationId: createPhenology
+      summary: Record a phenology event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsPhenology
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/phenology/{eventId}:
+    delete:
+      operationId: deletePhenology
+      summary: Delete a phenology event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: eventId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsPhenologyById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: eventId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant care logs: journal ───────────────────────────────────────────
+  /plants/{plantId}/journal:
+    get:
+      operationId: listJournal
+      summary: List journal entries for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Journal entries
+    post:
+      operationId: createJournalEntry
+      summary: Add a journal entry
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsJournal
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/journal/{entryId}:
+    put:
+      operationId: updateJournalEntry
+      summary: Update a journal entry
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: entryId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Updated
+    delete:
+      operationId: deleteJournalEntry
+      summary: Delete a journal entry
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: entryId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsJournalById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: entryId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant care logs: harvests ──────────────────────────────────────────
+  /plants/{plantId}/harvests:
+    get:
+      operationId: listHarvests
+      summary: List harvests for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Harvest list
+    post:
+      operationId: createHarvest
+      summary: Record a harvest
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsHarvests
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/harvests/{harvestId}:
+    delete:
+      operationId: deleteHarvest
+      summary: Delete a harvest
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: harvestId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsHarvestById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: harvestId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant care logs: soil ──────────────────────────────────────────────
+  /plants/{plantId}/soil-tests:
+    get:
+      operationId: listSoilTests
+      summary: List soil tests for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Soil test list
+    post:
+      operationId: createSoilTest
+      summary: Record a soil test
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsSoilTests
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/soil-tests/{testId}:
+    delete:
+      operationId: deleteSoilTest
+      summary: Delete a soil test
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: testId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsSoilTestById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: testId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/amendments:
+    get:
+      operationId: listAmendments
+      summary: List soil amendments for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Amendment list
+    post:
+      operationId: createAmendment
+      summary: Record a soil amendment
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsAmendments
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/amendments/{amendmentId}:
+    delete:
+      operationId: deleteAmendment
+      summary: Delete a soil amendment
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: amendmentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsAmendmentById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: amendmentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/substrate-changes:
+    get:
+      operationId: listSubstrateChanges
+      summary: List substrate changes for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Substrate change list
+    post:
+      operationId: createSubstrateChange
+      summary: Record a substrate change
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsSubstrateChanges
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/soil-insight:
+    get:
+      operationId: getSoilInsight
+      summary: Rule-based pH verdict + Gemini one-sentence rationale
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 60.0
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Soil insight
+    options:
+      operationId: corsSoilInsight
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant care logs: pest / disease incidents ──────────────────────────
+  /plants/{plantId}/incidents:
+    get:
+      operationId: listIncidents
+      summary: List pest/disease incidents for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Incident list
+    post:
+      operationId: createIncident
+      summary: Log a pest/disease incident
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsIncidents
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/incidents/{incidentId}:
+    put:
+      operationId: updateIncident
+      summary: Update an incident
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Updated
+    delete:
+      operationId: deleteIncident
+      summary: Delete an incident
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsIncidentById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/incidents/{incidentId}/treatments:
+    post:
+      operationId: addIncidentTreatment
+      summary: Record a treatment for an incident
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Treatment recorded
+    options:
+      operationId: corsIncidentTreatments
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/incidents/{incidentId}/resolve:
+    post:
+      operationId: resolveIncident
+      summary: Mark an incident resolved
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Resolved
+    options:
+      operationId: corsIncidentResolve
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: incidentId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Cross-plant outbreaks ──────────────────────────────────────────────────
+  /outbreaks:
+    get:
+      operationId: listOutbreaks
+      summary: Cross-plant outbreak aggregation
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Outbreak list
+    options:
+      operationId: corsOutbreaks
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /outbreaks/{outbreakId}/treat:
+    post:
+      operationId: treatOutbreak
+      summary: Record treatment across all plants in an outbreak
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: outbreakId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Treated
+    options:
+      operationId: corsOutbreakTreat
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: outbreakId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /outbreaks/{outbreakId}/resolve:
+    post:
+      operationId: resolveOutbreak
+      summary: Resolve an outbreak across all affected plants
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: outbreakId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Resolved
+    options:
+      operationId: corsOutbreakResolve
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: outbreakId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Wildlife observations ──────────────────────────────────────────────────
+  /plants/{plantId}/wildlifeObservations:
+    get:
+      operationId: listWildlifeObservations
+      summary: List pollinator / wildlife observations for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Observation list
+    post:
+      operationId: createWildlifeObservation
+      summary: Record a wildlife / pollinator observation
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsWildlifeObservations
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/wildlifeObservations/{obsId}:
+    delete:
+      operationId: deleteWildlifeObservation
+      summary: Delete an observation
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: obsId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsWildlifeObservationById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: obsId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Blooms / lifecycle / dormancy ──────────────────────────────────────────
+  /plants/{plantId}/blooms:
+    get:
+      operationId: listBlooms
+      summary: List bloom events for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Bloom list
+    post:
+      operationId: createBloom
+      summary: Record the start of a bloom
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsBlooms
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/blooms/{bloomId}:
+    put:
+      operationId: updateBloom
+      summary: Update a bloom event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: bloomId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Updated
+    options:
+      operationId: corsBloomById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: bloomId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/blooms/{bloomId}/end:
+    post:
+      operationId: endBloom
+      summary: Mark the end of a bloom event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: bloomId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Bloom ended
+    options:
+      operationId: corsBloomEnd
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: path
+          name: bloomId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/lifecycle:
+    get:
+      operationId: getLifecycle
+      summary: Get lifecycle events (prune / repot history)
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Lifecycle events
+    options:
+      operationId: corsLifecycle
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/lifecycle/prune:
+    post:
+      operationId: recordPrune
+      summary: Record a pruning event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Recorded
+    options:
+      operationId: corsLifecyclePrune
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/lifecycle/repot:
+    post:
+      operationId: recordRepot
+      summary: Record a repot event
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Recorded
+    options:
+      operationId: corsLifecycleRepot
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/dormancy/enter:
+    post:
+      operationId: enterDormancy
+      summary: Mark a plant as entering dormancy
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Entered dormancy
+    options:
+      operationId: corsDormancyEnter
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/dormancy/exit:
+    post:
+      operationId: exitDormancy
+      summary: Mark a plant as exiting dormancy
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Exited dormancy
+    options:
+      operationId: corsDormancyExit
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Per-plant ML / analytics ───────────────────────────────────────────────
+  /plants/{plantId}/anomaly:
+    get:
+      operationId: getPlantAnomaly
+      summary: Per-plant anomaly score
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Anomaly score
+    options:
+      operationId: corsPlantAnomaly
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/health-prediction:
+    get:
+      operationId: getHealthPrediction
+      summary: Health prediction for a plant (home_pro+)
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Health prediction
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsHealthPrediction
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/seasonal-adjustment:
+    get:
+      operationId: getSeasonalAdjustment
+      summary: Seasonal frequency-multiplier adjustment for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Seasonal adjustment
+    options:
+      operationId: corsSeasonalAdjustment
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/care-score:
+    get:
+      operationId: getCareScore
+      summary: Compute / return cached care score for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Care score
+    options:
+      operationId: corsCareScore
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/watering-recommendation:
+    get:
+      operationId: getWateringRecommendation
+      summary: AI-powered watering recommendation for a plant
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Watering recommendation
+    options:
+      operationId: corsWateringRecommendation
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/{plantId}/waterings:
+    get:
+      operationId: listWaterings
+      summary: Paginated watering history for a plant
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Watering log
+    options:
+      operationId: corsWaterings
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── ML / cross-plant analytics ─────────────────────────────────────────────
+  /ml/care-scores:
+    get:
+      operationId: listCareScores
+      summary: Care scores for all plants (home_pro+)
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Care scores
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsMlCareScores
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /ml/status:
+    get:
+      operationId: mlStatus
+      summary: ML model deployment status (no auth)
+      responses:
+        "200":
+          description: Status
+
+  /ml/export:
+    get:
+      operationId: mlExport
+      summary: Full user-data export for ML training (no auth — token via query)
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 60.0
+      responses:
+        "200":
+          description: User data export
+
+  /ml/anomaly-scan:
+    post:
+      operationId: mlAnomalyScan
+      summary: Background anomaly scan across all plants (no auth — internal)
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      responses:
+        "200":
+          description: Scan complete
+
+  /species/{name}/cluster:
+    get:
+      operationId: getSpeciesCluster
+      summary: Care-pattern cluster for a species
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: name
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Species cluster
+    options:
+      operationId: corsSpeciesCluster
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: name
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── AI extras ──────────────────────────────────────────────────────────────
+  /analyse-with-hint:
+    post:
+      operationId: analyseWithHint
+      summary: Analyse a photo with a species hint
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              imageBase64:
+                type: string
+              mimeType:
+                type: string
+              speciesHint:
+                type: string
+      responses:
+        "200":
+          description: Analysis result
+    options:
+      operationId: corsAnalyseWithHint
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /plants/identify:
+    post:
+      operationId: identifyPlant
+      summary: Identify a plant from up to 3 photos
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              images:
+                type: array
+                items:
+                  type: object
+      responses:
+        "200":
+          description: Identification result
+    options:
+      operationId: corsIdentifyPlant
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /recommend-propagation:
+    post:
+      operationId: recommendPropagation
+      summary: AI-powered propagation recommendations for a species
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Propagation recommendations
+    options:
+      operationId: corsRecommendPropagation
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Exports / imports (home_pro+) ──────────────────────────────────────────
+  /export/plants:
+    get:
+      operationId: exportPlants
+      summary: Export plants as CSV / XLSX
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 60.0
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Export file
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsExportPlants
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /export/watering-history:
+    get:
+      operationId: exportWateringHistory
+      summary: Export watering history
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 60.0
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Export file
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsExportWateringHistory
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /export/care-schedule:
+    get:
+      operationId: exportCareSchedule
+      summary: Export care schedule
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 60.0
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Export file
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsExportCareSchedule
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /import/plants:
+    post:
+      operationId: importPlants
+      summary: Bulk import plants from CSV / XLSX
+      x-google-backend:
+        address: ${function_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        jwt_audience: ${function_url}
+        deadline: 110.0
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Import result
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsImportPlants
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /import/plants/template:
+    get:
+      operationId: importPlantsTemplate
+      summary: Download the CSV template for plant import
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: CSV template
+    options:
+      operationId: corsImportPlantsTemplate
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Portal (landscaper public client portal) ───────────────────────────────
+  /portal/generate:
+    post:
+      operationId: portalGenerate
+      summary: Generate a public client-portal token (landscaper_pro)
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: false
+          schema:
+            type: object
+            properties:
+              label:
+                type: string
+      responses:
+        "201":
+          description: Token created
+        "402":
+          description: Tier upgrade required
+    options:
+      operationId: corsPortalGenerate
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /portal/{token}:
+    get:
+      operationId: portalView
+      summary: Public client-portal view (no auth — token in path)
+      parameters:
+        - in: path
+          name: token
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Portal data
+        "404":
+          description: Invalid token
+
+  # ── Sit-sessions (plant-sitter share) ──────────────────────────────────────
+  /sit-sessions:
+    get:
+      operationId: listSitSessions
+      summary: List the caller's sit-session shares
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Sit-session list
+    post:
+      operationId: createSitSession
+      summary: Create a sit-session share
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Created
+    options:
+      operationId: corsSitSessions
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /sit-sessions/{sessionId}:
+    delete:
+      operationId: deleteSitSession
+      summary: Revoke a sit-session share
+      security:
+        - api_key: []
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: Deleted
+    options:
+      operationId: corsSitSessionById
+      summary: CORS preflight
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          type: string
+      responses:
+        "204":
+          description: CORS preflight
+
+  /sit/{token}:
+    get:
+      operationId: sitView
+      summary: Public sitter view (no auth — token in path)
+      parameters:
+        - in: path
+          name: token
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Sitter view
+        "404":
+          description: Invalid / revoked token
+
+  /sit/{token}/water/{plantId}:
+    post:
+      operationId: sitWater
+      summary: Sitter logs a watering event (no user auth — token-based)
+      parameters:
+        - in: path
+          name: token
+          required: true
+          type: string
+        - in: path
+          name: plantId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Watered
+
 definitions:
   Plant:
     type: object
