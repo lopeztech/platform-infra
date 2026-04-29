@@ -1889,6 +1889,44 @@ paths:
         "204":
           description: CORS preflight
 
+  # ── Feature-flag overrides (workspace admin) ───────────────────────────────
+  /config/feature-flags:
+    get:
+      operationId: getFeatureFlags
+      summary: Get workspace feature-flag overrides (any member)
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Feature-flag overrides + canEdit hint
+    put:
+      operationId: saveFeatureFlags
+      summary: Save workspace feature-flag overrides (admin only)
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              overrides:
+                type: object
+      responses:
+        "200":
+          description: Saved
+        "400":
+          description: Invalid overrides payload
+        "403":
+          description: Forbidden — workspace admin role required
+    options:
+      operationId: corsConfigFeatureFlags
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
   # ── Propagations ───────────────────────────────────────────────────────────
   /propagations:
     get:
