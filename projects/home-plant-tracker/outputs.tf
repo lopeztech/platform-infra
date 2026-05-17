@@ -68,6 +68,16 @@ output "api_gateway_url" {
   value       = "https://${google_api_gateway_gateway.app.default_hostname}"
 }
 
+output "api_public_url" {
+  description = "Public API URL served via the global external HTTPS LB — preferred VITE_API_BASE_URL once the managed cert is ACTIVE"
+  value       = "https://api.${var.domain}"
+}
+
+output "api_lb_ip" {
+  description = "Static anycast IP fronting the API hostname. The Cloudflare A record is managed by Terraform; this is exposed for diagnostics (dig / openssl s_client)."
+  value       = google_compute_global_address.api.address
+}
+
 output "api_key" {
   description = "API key for the Plant Tracker API — set as VITE_API_KEY in GitHub Secrets and .env.local"
   value       = google_apikeys_key.app.key_string

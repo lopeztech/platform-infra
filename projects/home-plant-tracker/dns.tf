@@ -13,15 +13,15 @@ resource "cloudflare_record" "app" {
   name    = "plants"
   type    = "CNAME"
   content = "${google_firebase_hosting_site.plant_tracker.site_id}.web.app"
-  proxied = false  # DNS-only — Firebase handles CDN and TLS
+  proxied = false # DNS-only — Firebase handles CDN and TLS
   ttl     = 3600
 }
 
 resource "cloudflare_record" "api" {
   zone_id = data.cloudflare_zone.lopezcloud.id
   name    = "api.plants"
-  type    = "CNAME"
-  content = google_api_gateway_gateway.app.default_hostname
-  proxied = true  # Cloudflare terminates TLS for api.plants.lopezcloud.dev
-  ttl     = 1     # Auto — required when proxied
+  type    = "A"
+  content = google_compute_global_address.api.address
+  proxied = false # DNS-only — GCP LB terminates TLS with a managed cert (see loadbalancer.tf)
+  ttl     = 3600
 }
