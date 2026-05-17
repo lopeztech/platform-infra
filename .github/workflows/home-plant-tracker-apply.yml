@@ -26,6 +26,7 @@ jobs:
       TF_DIR: projects/home-plant-tracker
       TF_ENV: prod
       TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
+      FN_SOURCE_BUCKET: home-plant-tracker-lcd-fn-source-prod
     steps:
       - uses: actions/checkout@v6
 
@@ -45,6 +46,40 @@ jobs:
           workload_identity_provider: ${{ secrets.HOME_PLANT_TRACKER_WIF_PROVIDER }}
           service_account: ${{ secrets.HOME_PLANT_TRACKER_SA_EMAIL }}
 
+      - uses: google-github-actions/setup-gcloud@v3
+
+      # Resolve the Cloud Function source ZIP. Resolution order:
+      #   1. workflow_dispatch input (explicit override)
+      #   2. most-recent .zip in the source bucket (self-healing — survives
+      #      home-plant-tracker repo uploading without coordinating a secret
+      #      bump, and the 30-day GCS lifecycle on this bucket)
+      #   3. HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT secret (bootstrap
+      #      fallback for when the bucket is empty)
+      - name: Resolve function source object
+        id: source
+        run: |
+          set -euo pipefail
+          OBJ="${{ inputs.function_source_object }}"
+          if [ -z "$OBJ" ]; then
+            OBJ=$(gcloud storage objects list "gs://${FN_SOURCE_BUCKET}" \
+                    --format="value(name)" \
+                    --sort-by="~timeCreated" \
+                    --limit=20 2>/dev/null \
+                  | grep -E '\.zip$' \
+                  | head -1 \
+                  || true)
+          fi
+          if [ -z "$OBJ" ]; then
+            OBJ="${{ secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}"
+            echo "::warning::Bucket gs://${FN_SOURCE_BUCKET} has no .zip objects; falling back to secret."
+          fi
+          if [ -z "$OBJ" ]; then
+            echo "::error::No function source ZIP found in bucket and no fallback secret set."
+            exit 1
+          fi
+          echo "Resolved function_source_object=${OBJ}"
+          echo "object=${OBJ}" >> "$GITHUB_OUTPUT"
+
       - name: Terraform Init
         run: |
           terraform -chdir=${{ env.TF_DIR }} init \
@@ -59,7 +94,7 @@ jobs:
           terraform -chdir=${{ env.TF_DIR }} apply \
             -var-file="environments/${{ env.TF_ENV }}/terraform.tfvars" \
             -var="ml_admin_token=${{ secrets.ML_ADMIN_TOKEN }}" \
-            -var="function_source_object=${{ inputs.function_source_object || secrets.HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT }}" \
+            -var="function_source_object=${{ steps.source.outputs.object }}" \
             -var="billing_account=${{ secrets.BILLING_ACCOUNT_ID }}" \
             -input=false \
             -auto-approve \
