@@ -3861,6 +3861,107 @@ paths:
         "200":
           description: Watered
 
+  # ── Gift cards ─────────────────────────────────────────────────────────────
+  /gifts/mine:
+    get:
+      operationId: listMyGifts
+      summary: List gift cards purchased or redeemed by the caller
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Gift card list
+    options:
+      operationId: corsGiftsMine
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /gifts/purchase:
+    post:
+      operationId: purchaseGift
+      summary: Purchase a gift card (creates a Stripe checkout session)
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Checkout session
+        "402":
+          description: Payment required / billing disabled
+    options:
+      operationId: corsGiftsPurchase
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /gifts/redeem:
+    post:
+      operationId: redeemGift
+      summary: Redeem a gift card code against the caller's account
+      security:
+        - api_key: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+      responses:
+        "200":
+          description: Redeemed
+        "400":
+          description: Invalid or already-redeemed code
+        "404":
+          description: Code not found
+    options:
+      operationId: corsGiftsRedeem
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  # ── Rebates ────────────────────────────────────────────────────────────────
+  /rebates/categories:
+    get:
+      operationId: listRebateCategories
+      summary: List rebate categories (public — no auth)
+      responses:
+        "200":
+          description: Rebate category list
+    options:
+      operationId: corsRebatesCategories
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
+  /rebates/matches:
+    get:
+      operationId: listRebateMatches
+      summary: List rebates matching the caller's plants / location
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Rebate match list
+    options:
+      operationId: corsRebatesMatches
+      summary: CORS preflight
+      responses:
+        "204":
+          description: CORS preflight
+
 definitions:
   Plant:
     type: object
