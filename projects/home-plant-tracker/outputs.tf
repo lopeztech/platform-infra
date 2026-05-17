@@ -74,7 +74,7 @@ output "api_public_url" {
 }
 
 output "api_lb_ip" {
-  description = "Static anycast IP fronting api.${var.domain}. The Cloudflare A record is managed by Terraform; this is exposed for diagnostics (dig / openssl s_client)."
+  description = "Static anycast IP fronting the API hostname. The Cloudflare A record is managed by Terraform; this is exposed for diagnostics (dig / openssl s_client)."
   value       = google_compute_global_address.api.address
 }
 
