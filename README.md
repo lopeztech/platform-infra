@@ -20,7 +20,6 @@ projects/
   _template/                        # Scaffold for new projects
   data-feeder/                      # Data ingestion pipeline
   finance-doctor/                   # Personal finance AI assistant
-  home-plant-tracker/               # Smart plant care tracker
 .github/workflows/
   <project>-plan.yml                # PR plan + comment (per project)
   <project>-apply.yml               # Auto-apply on merge to master (per project)
@@ -31,31 +30,8 @@ versions.tf                         # Root provider requirements
 
 | Project | GCP Project ID | Domain | Environment | Key services |
 |---------|---------------|--------|-------------|--------------|
-| [home-plant-tracker](#home-plant-tracker) | `home-plant-tracker-lcd` | `plants.lopezcloud.dev` | prod | Firebase Hosting, Cloud Functions v2, API Gateway, Firestore, Gemini |
 | [data-feeder](#data-feeder) | `data-feeder-lcd` | `datafeeder.lopezcloud.dev` | single | Cloud Run, BigQuery, Pub/Sub, GCS (medallion), CMEK |
 | [finance-doctor](#finance-doctor) | `finance-doctor-lcd` | `finance.lopezcloud.dev` | prod | Cloud Run, Firestore, Gemini, OAuth |
-
-### home-plant-tracker
-
-Smart plant care app with AI-powered health analysis and watering recommendations.
-
-**Architecture:**
-- **Frontend**: Vite React SPA on Firebase Hosting (`plants.lopezcloud.dev`)
-- **Backend**: Cloud Functions v2 (`plant-tracker-plants-api`) behind API Gateway
-- **Database**: Firestore (native mode)
-- **Storage**: GCS buckets for user images and ML training data
-- **AI**: Gemini integration for plant analysis, diagnostics, and care recommendations
-- **Scheduling**: Cloud Scheduler for weekly ML data exports
-- **DNS**: Cloudflare (CNAME to Firebase Hosting + proxied CNAME for API)
-
-**Key resources:**
-- `google_firebase_hosting_site.plant_tracker` — static SPA hosting
-- `google_cloudfunctions2_function.plants` — Node.js 20 CRUD + AI API
-- `google_api_gateway_gateway.app` — OpenAPI 2.0 gateway with API key auth
-- `google_firestore_database.app` — plant data (delete-protected)
-- `google_storage_bucket.images` — user-uploaded photos (180-day lifecycle)
-- `google_storage_bucket.ml_data` — Vertex AI training exports (90-day lifecycle)
-- `google_cloud_scheduler_job.ml_export_weekly` — Sunday 3 AM AEST
 
 ### data-feeder
 
@@ -166,10 +142,6 @@ All apply workflows require GitHub **production** environment approval before ru
 | `TF_STATE_BUCKET` | All | GCS backend bucket |
 | `BILLING_ACCOUNT_ID` | All | Budget alerts |
 | `CLOUDFLARE_API_TOKEN` | All | DNS record management |
-| `HOME_PLANT_TRACKER_WIF_PROVIDER` | home-plant-tracker | WIF provider resource name |
-| `HOME_PLANT_TRACKER_SA_EMAIL` | home-plant-tracker | Deployer SA email |
-| `HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT` | home-plant-tracker | Cloud Function ZIP name |
-| `ML_ADMIN_TOKEN` | home-plant-tracker | ML endpoint auth token |
 | `DATA_FEEDER_WIF_PROVIDER` | data-feeder | WIF provider resource name |
 | `DATA_FEEDER_SA_EMAIL` | data-feeder | Deployer SA email |
 | `FINANCE_DOCTOR_WIF_PROVIDER` | finance-doctor | WIF provider resource name |
@@ -179,9 +151,9 @@ All apply workflows require GitHub **production** environment approval before ru
 
 | Resource type | Pattern | Example |
 |--------------|---------|---------|
-| GCP resources | lowercase with hyphens | `plant-tracker-plants-api` |
+| GCP resources | lowercase with hyphens | `data-feeder-api-prod` |
 | GCS buckets | `{project_id}-{purpose}-{env}` | `data-feeder-lcd-raw-prod` |
-| Service accounts | `{app}-{role}` | `plant-tracker-deployer` |
+| Service accounts | `{app}-{role}` | `finance-doctor-deployer` |
 | KMS keys | `key-{layer}` | `key-bronze` |
 | Labels | `app`, `environment`, `managed_by` | `managed_by = "terraform"` |
 
@@ -200,6 +172,5 @@ Each project has configurable monthly budget alerts:
 
 | Project | Monthly budget | Alert thresholds |
 |---------|---------------|------------------|
-| home-plant-tracker | $20 | 50%, 100%, forecasted 100% |
 | data-feeder | $50 | 50%, 100%, forecasted 100% |
 | finance-doctor | $20 | 50%, 100%, forecasted 100% |
