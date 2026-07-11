@@ -9,18 +9,6 @@ REPO="lopeztech/platform-infra"
 
 echo "==> Discovering GCP values..."
 
-# ── home-plant-tracker ─────────────────────────────────────────────────────────
-HPT_PROJECT="home-plant-tracker-lcd"
-HPT_WIF_PROVIDER=$(gcloud iam workload-identity-pools providers describe github-provider \
-  --workload-identity-pool="plant-tracker-github-pool" \
-  --project="$HPT_PROJECT" \
-  --location=global \
-  --format="value(name)")
-HPT_SA_EMAIL=$(gcloud iam service-accounts describe \
-  "plant-tracker-deployer@${HPT_PROJECT}.iam.gserviceaccount.com" \
-  --project="$HPT_PROJECT" \
-  --format="value(email)")
-
 # ── data-feeder ────────────────────────────────────────────────────────────────
 # The workflow uses a single DATA_FEEDER_WIF_PROVIDER secret across dev/staging/prod.
 # The iam module creates one pool per env; we use prod as the canonical provider.
@@ -42,8 +30,6 @@ TF_STATE_BUCKET="platform-infra-lcd-tf-state"
 echo ""
 echo "Discovered values:"
 echo "  TF_STATE_BUCKET=$TF_STATE_BUCKET"
-echo "  HOME_PLANT_TRACKER_WIF_PROVIDER=$HPT_WIF_PROVIDER"
-echo "  HOME_PLANT_TRACKER_SA_EMAIL=$HPT_SA_EMAIL"
 echo "  DATA_FEEDER_WIF_PROVIDER=$DF_WIF_PROVIDER"
 echo "  DATA_FEEDER_SA_EMAIL=$DF_SA_EMAIL"
 echo ""
@@ -52,14 +38,8 @@ echo ""
 echo "==> Setting GitHub secrets on ${REPO}..."
 
 gh secret set TF_STATE_BUCKET                 --repo "$REPO" --body "$TF_STATE_BUCKET"
-gh secret set HOME_PLANT_TRACKER_WIF_PROVIDER --repo "$REPO" --body "$HPT_WIF_PROVIDER"
-gh secret set HOME_PLANT_TRACKER_SA_EMAIL     --repo "$REPO" --body "$HPT_SA_EMAIL"
 gh secret set DATA_FEEDER_WIF_PROVIDER        --repo "$REPO" --body "$DF_WIF_PROVIDER"
 gh secret set DATA_FEEDER_SA_EMAIL            --repo "$REPO" --body "$DF_SA_EMAIL"
 
 echo ""
 echo "Done! All discoverable secrets set."
-echo ""
-echo "Set these remaining secrets manually (values not in GCP):"
-echo "  gh secret set GEMINI_API_KEY --repo $REPO"
-echo "  gh secret set HOME_PLANT_TRACKER_FUNCTION_SOURCE_OBJECT --repo $REPO"
